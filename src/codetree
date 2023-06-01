@@ -1,0 +1,2 @@
+CODEDIRS=base boot drivers std 
+FILES=../build/base/main.o ../build/base/tunnel.o ../build/boot/boot.o ../build/drivers/terminal80x25.o ../build/drivers/vga80x25.o ../build/std/string.o 
