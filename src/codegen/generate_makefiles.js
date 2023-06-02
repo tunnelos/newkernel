@@ -1,7 +1,11 @@
 var C_COMPILER = "i686-linux-gnu-gcc";
+var C_COMPARGS = "-ffreestanding -O2 -Wall -Wextra -no-pie -g";
+
 var ASSEMBMER  = "i686-linux-gnu-as";
+var ASSMARGS   = "-g"
 
 var fs = require("fs");
+var cp = require("child_process");
 
 var getDirectories = (source = "") => {
     return fs.readdirSync(source, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
@@ -10,21 +14,40 @@ var getDirectories = (source = "") => {
 var folders = getDirectories(".");
 var actualCodeFolders = [];
 
+var crtbegin = cp.execSync(`${C_COMPILER} ${C_COMPARGS} -print-file-name=crtbegin.o`);
+var crtend = cp.execSync(`${C_COMPILER} ${C_COMPARGS} -print-file-name=crtend.o`);
+
 var env_codetree = {
     CODEDIRS: [],
-    FILES: []
+    FILES: [],
+    CC: C_COMPILER,
+    CARGS: C_COMPARGS  
 };
+var file_start = "";
+var file_end = "";
 
 folders.forEach((folder) => {
     var isBranch = true;
     var files = [];
+    var file_start1 = "";
+    var file_end1 = "";
     fs.readdirSync(folder).forEach(file => {
         if (!isBranch) return;
 
-        if (file.endsWith(".js") || file.endsWith(".h"))  {
+        if (file.endsWith(".js") || file.endsWith(".h") || fs.lstatSync(`${folder}/${file}`).isDirectory() )  {
             isBranch == false;
         } else {
-            if (!file.endsWith(".cfg") && file != "Makefile") files.push(file);
+            var name = file.split(".")[0];
+
+            if (!file.endsWith(".cfg") && file != "Makefile") { 
+                if (file.endsWith("crti.asm")) {
+                    file_start1 = `../build/${folder}/${name}.o`; 
+                } else if (file.endsWith("crtn.asm")) {
+                    file_end1 = `../build/${folder}/${name}.o`;
+                }
+
+                files.push(file);
+            }
         }
     });
 
@@ -33,11 +56,13 @@ folders.forEach((folder) => {
             "folder": folder,
             "files": files
         })
+        if (file_start1 != "") file_start = file_start1;
+        if (file_end1 != "") file_end = file_end1;
     }
 });
 
 actualCodeFolders.forEach((branch) => {
-    var makefile = `CPARAMS=-ffreestanding -O2 -Wall -Wextra
+    var makefile = `CPARAMS=${C_COMPARGS}
 .RECIPEPREFIX = >
 
 all:
@@ -59,7 +84,7 @@ all:
         }
         if (file.endsWith(".asm")) {
             makefile += `
-> @${ASSEMBMER} ${file} -o ../../build/${branch.folder}/${name}.o 
+> @${ASSEMBMER} ${file} ${ASSMARGS} -o ../../build/${branch.folder}/${name}.o 
             `;
         }
 
@@ -81,10 +106,26 @@ env_codetree.CODEDIRS.forEach((codedir) => {
     env_codetree_string += `${codedir} `;
 });
 
-env_codetree_string += "\nFILES=";
+var crtbeginstr = crtbegin.toString("utf8");
+var crtendstr = crtend.toString("utf8");
+
+crtbeginstr = crtbeginstr.trim();
+crtendstr = crtendstr.trim();
+
+env_codetree_string += `\nFILES=`;
+
+if (file_start != "") env_codetree_string += `${file_start} `
+
+env_codetree_string += `${crtbeginstr} `;
 
 env_codetree.FILES.forEach((file) => {
+    if(file == file_start || file == file_end) return;
     env_codetree_string += `${file} `;
 });
+
+env_codetree_string += `${crtendstr} ${file_end}
+CC=${env_codetree.CC}
+CARGS=${env_codetree.CARGS}
+`;
 
 fs.writeFileSync("codetree", env_codetree_string);

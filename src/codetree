@@ -1,2 +1,4 @@
-CODEDIRS=base boot drivers std 
-FILES=../build/base/main.o ../build/base/tunnel.o ../build/boot/boot.o ../build/drivers/terminal80x25.o ../build/drivers/vga80x25.o ../build/std/string.o 
+CODEDIRS=application_bootscreen base boot crt drivers std 
+FILES=../build/crt/crti.o /usr/lib/gcc-cross/i686-linux-gnu/11/crtbegin.o ../build/application_bootscreen/main.o ../build/base/main.o ../build/base/tunnel.o ../build/boot/boot.o ../build/drivers/terminal80x25.o ../build/drivers/vga80x25.o ../build/std/string.o /usr/lib/gcc-cross/i686-linux-gnu/11/crtend.o ../build/crt/crtn.o
+CC=i686-linux-gnu-gcc
+CARGS=-ffreestanding -O2 -Wall -Wextra -no-pie -g

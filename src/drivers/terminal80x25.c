@@ -4,11 +4,13 @@
 #include "../include/string.h"
 
 void __terminal_init() {
-    tunnel_config.terminal.row = 0;
-    tunnel_config.terminal.column = 0;
-    tunnel_config.terminal.color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-    tunnel_config.terminal.buffer = (uint16_t *)0xB8000;
+    tunnel_config.terminal.buffer = (uint16_t *)0xC03FF000;
 
+    __terminal_reset();
+    __terminal_clear();
+}
+
+void __terminal_clear() {
     for (int y = 0; y < 25; y++) {
 		for (int x = 0; x < 80; x++) {
 			const int index = y * 80 + x;
@@ -57,4 +59,10 @@ void __terminal_swrite(const char *data, int size) {
 
 void __terminal_write(const char *data) {
     __terminal_swrite(data, strlen(data));
+}
+
+void __terminal_reset() {
+    tunnel_config.terminal.column = 0;
+    tunnel_config.terminal.row = 0;
+    tunnel_config.terminal.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 }
