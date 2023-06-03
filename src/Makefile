@@ -22,16 +22,16 @@ linkage:
 
 	@echo Done.
 
-	@make buildimage
+	@make buildimage --no-print-directory
 all: $(CODEDIRS)
-	@make linkage
-	@make process_debugging
+	@make linkage --no-print-directory
+	@make process_debugging --no-print-directory
 
 	@echo
 	@echo -----------------------------
 	@echo Size: $(shell du -h ../build/kernel/kernel.bin)
 
 $(CODEDIRS):
-	@$(MAKE) -C $@
+	@$(MAKE) -C $@ --no-print-directory
 .PHONY: $(CODEDIRS)
 

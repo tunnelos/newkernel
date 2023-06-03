@@ -4,11 +4,15 @@
 #include "../include/tunnel.h"
 #include "../include/vga80x25.h"
 
-void __app_bootscreen_init() {
-    __terminal_clear();
-    __terminal_reset();
+#include "../include/string.h"
 
-    __terminal_write("Tunnel OS ");
+void __app_bootscreen_init() {
+    __terminal_init();
+    __terminal_reset();
+    
+    const char *name = "Tunnel OS Loader";
+
+    __terminal_write(name);
     
     uint8_t colortable[14] = {
         VGA_COLOR_BLUE,
@@ -30,7 +34,7 @@ void __app_bootscreen_init() {
     uint8_t i = 0;
     uint8_t offset = 0;
 
-    while(i < 36) {
+    while(i < ((80 - strlen(name)) / 2)) {
         __terminal_setColor(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
         if((i + 1) != 35) {
             __terminal_putc('.');
