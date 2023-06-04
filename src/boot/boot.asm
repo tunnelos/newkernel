@@ -1,9 +1,10 @@
 # Declare constants for the multiboot header.
-.set ALIGN,    1<<0             # align loaded modules on page boundaries
-.set MEMINFO,  1<<1             # provide memory map
-.set FLAGS,    ALIGN | MEMINFO  # this is the Multiboot 'flag' field
-.set MAGIC,    0x1BADB002       # 'magic number' lets bootloader find the header
-.set CHECKSUM, -(MAGIC + FLAGS) # checksum of above, to prove we are multiboot
+.set ALIGN,    1<<0                       # align loaded modules on page boundaries
+.set MEMINFO,  1<<1                       # provide memory map
+.set MONINFO,  1<<2                       # set video resolution
+.set FLAGS,    ALIGN | MEMINFO            # this is the Multiboot 'flag' field
+.set MAGIC,    0x1BADB002                 # 'magic number' lets bootloader find the header
+.set CHECKSUM, -(MAGIC + FLAGS)           # checksum of above, to prove we are multiboot
 
 # Declare a multiboot header that marks the program as a kernel.
 .section .multiboot.data, "aw"
@@ -11,6 +12,9 @@
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
+.long 0, 0, 0, 0, 0
+.long 1
+.long 80, 30, 0
 
 # Allocate the initial stack.
 .section .bootstrap_stack, "aw", @nobits
@@ -26,6 +30,10 @@ stack_top:
 boot_page_directory:
 	.skip 4096
 boot_page_table1:
+	.skip 4096
+boot_page_table2:
+	.skip 4096
+boot_page_table3:
 	.skip 4096
 # Further page tables may be required if the kernel grows beyond 3 MiB.
 
@@ -44,8 +52,9 @@ _start:
 	#       1 MiB as it can be generally useful, and there's no need to
 	#       specially map the VGA buffer.
 	movl $0, %esi
-	# Map 1023 pages. The 1024th will be the VGA text buffer.
-	movl $1023, %ecx
+	
+	# Map all 1024 pages for the kernel code.
+	movl $1024, %ecx
 
 1:
 	# Only map the kernel.
@@ -69,8 +78,19 @@ _start:
 	loop 1b
 
 3:
-	# Map VGA video memory to 0xC03FF000 as "present, writable".
-	movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
+	# Map VGA video memory to ?? as "present, writable".
+	movl $(0x000B8000 | 0x003), boot_page_table2 - 0xC0000000 + 0 * 4
+	movl $(0x000B9000 | 0x003), boot_page_table2 - 0xC0000000 + 1 * 4
+	# Map Multiboot structure
+	
+	orl $0x003, %ebx
+	movl %ebx, boot_page_table2 - 0xC0000000 + 2 * 4 
+
+	# Map free memory
+	movl $(0x01000000 | 0x003), boot_page_table3 - 0xC0000000 + 0 * 4
+	movl $(0x01001000 | 0x003), boot_page_table3 - 0xC0000000 + 1 * 4
+	movl $(0x01002000 | 0x003), boot_page_table3 - 0xC0000000 + 2 * 4
+	movl $(0x01003000 | 0x003), boot_page_table3 - 0xC0000000 + 3 * 4
 
 	# The page table is used at both page directory entry 0 (virtually from 0x0
 	# to 0x3FFFFF) (thus identity mapping the kernel) and page directory entry
@@ -82,6 +102,8 @@ _start:
 	# Map the page table to both virtual addresses 0x00000000 and 0xC0000000.
 	movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
 	movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 768 * 4
+	movl $(boot_page_table2 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 1 * 4
+	movl $(boot_page_table3 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 2 * 4
 
 	# Set cr3 to the address of the boot_page_directory.
 	movl $(boot_page_directory - 0xC0000000), %ecx
@@ -115,6 +137,8 @@ _start:
 	call __sse_init
 	call __fpu_init
 	# call __avx_init
+	call __keyboard_ps2_init
+	# call __serial_init
 	call __terminal_init
 
 	call kernel_main

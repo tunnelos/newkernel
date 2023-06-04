@@ -1,4 +1,4 @@
-CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie -g
+CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie
 .RECIPEPREFIX = >
 
 all:
@@ -7,19 +7,23 @@ all:
 
 > @echo Compiling cpu/avx.asm ...
         
-> @i686-linux-gnu-as avx.asm -g -o ../../build/cpu/avx.o 
+> @i686-linux-gnu-as avx.asm  -o ../../build/cpu/avx.o 
             
 > @echo Compiling cpu/fpu.asm ...
         
-> @i686-linux-gnu-as fpu.asm -g -o ../../build/cpu/fpu.o 
+> @i686-linux-gnu-as fpu.asm  -o ../../build/cpu/fpu.o 
             
 > @echo Compiling cpu/gdtstatic.c ...
         
 > @i686-linux-gnu-gcc -c gdtstatic.c $(CPARAMS) -o ../../build/cpu/gdtstatic.o 
             
+> @echo Compiling cpu/io.c ...
+        
+> @i686-linux-gnu-gcc -c io.c $(CPARAMS) -o ../../build/cpu/io.o 
+            
 > @echo Compiling cpu/sse.asm ...
         
-> @i686-linux-gnu-as sse.asm -g -o ../../build/cpu/sse.o 
+> @i686-linux-gnu-as sse.asm  -o ../../build/cpu/sse.o 
             
 > @echo Compiling cpu/tlb.c ...
         

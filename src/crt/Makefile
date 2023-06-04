@@ -1,4 +1,4 @@
-CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie -g
+CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie
 .RECIPEPREFIX = >
 
 all:
@@ -7,11 +7,11 @@ all:
 
 > @echo Compiling crt/crti.asm ...
         
-> @i686-linux-gnu-as crti.asm -g -o ../../build/crt/crti.o 
+> @i686-linux-gnu-as crti.asm  -o ../../build/crt/crti.o 
             
 > @echo Compiling crt/crtn.asm ...
         
-> @i686-linux-gnu-as crtn.asm -g -o ../../build/crt/crtn.o 
+> @i686-linux-gnu-as crtn.asm  -o ../../build/crt/crtn.o 
             
 > @echo crt branch done.
     

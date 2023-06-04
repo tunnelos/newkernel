@@ -1,8 +1,10 @@
 var C_COMPILER = "i686-linux-gnu-gcc";
-var C_COMPARGS = "-ffreestanding -O2 -Wall -Wextra -no-pie -g";
+var C_COMPARGS = "-ffreestanding -O2 -Wall -Wextra -no-pie";
 
 var ASSEMBMER  = "i686-linux-gnu-as";
-var ASSMARGS   = "-g"
+var ASSMARGS   = ""
+
+var ENABLE_DEBUG = false;
 
 var fs = require("fs");
 var cp = require("child_process");
@@ -16,6 +18,13 @@ var actualCodeFolders = [];
 
 var crtbegin = cp.execSync(`${C_COMPILER} ${C_COMPARGS} -print-file-name=crtbegin.o`);
 var crtend = cp.execSync(`${C_COMPILER} ${C_COMPARGS} -print-file-name=crtend.o`);
+
+if (ENABLE_DEBUG) {
+    if (ASSMARGS != "") ASSMARGS += " -g";
+    else ASSMARGS = "-g";
+
+    C_COMPARGS += " -g";
+}
 
 var env_codetree = {
     CODEDIRS: [],

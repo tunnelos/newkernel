@@ -7,8 +7,16 @@
 #include "../include/string.h"
 
 void __app_bootscreen_init() {
-    __terminal_init();
-    __terminal_reset();
+    vector2d_t old_pos;
+    uint8_t old_color;
+
+    old_pos.x = tunnel_config.terminal.column;
+    old_pos.y = tunnel_config.terminal.row;
+    old_color = tunnel_config.terminal.color;
+
+    tunnel_config.terminal.column = 0;
+    tunnel_config.terminal.row = 0;
+    tunnel_config.terminal.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     
     const char *name = "Tunnel OS Loader";
 
@@ -65,4 +73,8 @@ void __app_bootscreen_init() {
         __terminal_putc(0xDF);
         i++;
     }
+
+    tunnel_config.terminal.column = old_pos.x;
+    tunnel_config.terminal.row = old_pos.y;
+    tunnel_config.terminal.color = old_color;
 }

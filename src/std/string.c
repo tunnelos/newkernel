@@ -25,7 +25,7 @@ char *tolower(char *data) {
     if(!data) return "\0";
     if(!strlen(data)) return "\0";
     while(*a) {
-        *b = tlhelper(*a);
+        *b = tolowerchar(*a);
         a++;
         b++; 
     }
@@ -102,6 +102,8 @@ float strtof(const char *nptr, char **endptr) {
 int strncmp(const char *s1, const char *s2, size_t n) {
     size_t i = 0;
     while(i < n) {
+        if(s1[i] == 0) return 1;
+        if(s2[i] == 0) return 1;
         if(s1[i] != s2[i]) return 1;
         i++;
     }
@@ -132,7 +134,7 @@ char *strrchr(const char *s, char c) {
     return last;
 }
 int strcmp(const char *s1, const char *s2) {
-    return strncmp(s1, s2, strlen(s1));
+    return strncmp(s1, s2, strlen(s2));
 }
 // char *strnstcat(char *dest, const char *src, size_t n, size_t startPoint) {
 
@@ -150,4 +152,21 @@ char *strncat(char *dest, const char *src, size_t n) {
 }
 char *strcat(char *dest, const char *src) {
     return strncat(dest, src, strlen(src));
+}
+
+char toupperchar(char c) {
+    if (c >= 'a' && c <= 'z') {
+        c = c - 'a' + 'A'; 
+    }
+    return c;
+}
+
+char *toupper(char *data) {
+    size_t len = strlen(data);
+    size_t i;
+
+    for (i = 0; i < len; i++) {
+        data[i] = toupperchar(data[i]);
+    }
+    return data;
 }
