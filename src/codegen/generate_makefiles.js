@@ -1,5 +1,5 @@
 var C_COMPILER = "i686-linux-gnu-gcc";
-var C_COMPARGS = "-ffreestanding -O2 -Wall -Wextra -no-pie";
+var C_COMPARGS = "-ffreestanding -O0 -Wall -Wextra -no-pie -fno-pic";
 
 var ASSEMBMER  = "i686-linux-gnu-as";
 var ASSMARGS   = ""

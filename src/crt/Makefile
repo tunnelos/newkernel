@@ -1,4 +1,4 @@
-CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie
+CPARAMS=-ffreestanding -O0 -Wall -Wextra -no-pie -fno-pic
 .RECIPEPREFIX = >
 
 all:

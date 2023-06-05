@@ -7,14 +7,17 @@
 #include "../include/string.h"
 #include "../include/tunnel.h"
 #include "../include/vga80x25.h"
+#include <stdlib.h>
 
 #include "../include/application_bootscreen/main.h"
 #include "../include/application_help/main.h"
+#include "../include/application_enableints/main.h"
 
 bool __applcation_terminal_isCommand(const char *input) {
     if (!strcmp(input, "help")) return true;
     if (!strcmp(input, "bootscreen")) return true;
     if (!strcmp(input, "terminal")) return true;
+    if (!strcmp(input, "enableints")) return true;
 
     return false;
 }
@@ -28,6 +31,9 @@ void __application_terminal_executeApplication(const char *input) {
     }
     if (!strcmp(input, "terminal")) {
         __application_terminal_init();
+    }
+    if (!strcmp(input, "enableints")) {
+        __application_enableints_init();
     }
 }
 
@@ -59,7 +65,7 @@ void __application_terminal_lightpointer(uint16_t p, char *buffer) {
 }
 
 void __application_terminal_init() {
-    char buffer[256] = {};
+    char *buffer = (char *)calloc(256, 1);
     uint16_t buffer_pointer = 0;
 
     bool inCapsMode = false;
@@ -108,6 +114,7 @@ void __application_terminal_init() {
                     if (buffer[0] != 0) putc('\n');
 
                     if (!__applcation_terminal_isCommand(buffer)) {
+                        if (!strcmp(buffer, "exit")) goto exit;
                         if (buffer[0] != 0)  puts("   Invalid command! Type 'help' for help.");
                     } else {
                         __application_terminal_executeApplication(buffer);
@@ -152,4 +159,8 @@ void __application_terminal_init() {
             }
         }
     }
+
+    exit:
+    free(buffer);
+    return;
 }

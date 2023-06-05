@@ -35,13 +35,13 @@ void __serial_write_fmt(const char *fmt, ...) {
                     case 'c': {
                         char arg = va_arg(ap, int);
                         __serial_write_char(arg);
-                        i += 2;
+                        i++;
                         break;
                     }
                     case 's': {
                         char *arg = va_arg(ap, char *);
                         __serial_write_raw(arg, strlen(arg));
-                        i += 2;
+                        i++;
                         break;
                     }
                     case 'i':
@@ -52,7 +52,7 @@ void __serial_write_fmt(const char *fmt, ...) {
                             char buffer[20];
                             __serial_write_raw(itoa(arg, buffer, 10), strlen(itoa(arg, buffer, 10)));
                         }
-                        i += 2;
+                        i++;
                         break;
                     }
                     case 'x':
@@ -60,17 +60,19 @@ void __serial_write_fmt(const char *fmt, ...) {
                         uint32_t arg = va_arg(ap, uint32_t);
                         char buffer[20];
                         __serial_write_raw(itoa(arg, buffer, 16), strlen(itoa(arg, buffer, 16)));
-                        i += 2;
+                        i++;
                         break;
                     }
                     case 'o': {
                         uint32_t arg = va_arg(ap, uint32_t);
                         char buffer[20];
                         __serial_write_raw(itoa(arg, buffer, 8), strlen(itoa(arg, buffer, 8)));
+                        i++;
                         break;
                     }
                     default: {
                         va_end(ap);
+                        i++;
                         break;
                     }
                 }

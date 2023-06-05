@@ -1,4 +1,4 @@
-CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie
+CPARAMS=-ffreestanding -O0 -Wall -Wextra -no-pie -fno-pic
 .RECIPEPREFIX = >
 
 all:
@@ -8,6 +8,10 @@ all:
 > @echo Compiling base/main.c ...
         
 > @i686-linux-gnu-gcc -c main.c $(CPARAMS) -o ../../build/base/main.o 
+            
+> @echo Compiling base/mm.c ...
+        
+> @i686-linux-gnu-gcc -c mm.c $(CPARAMS) -o ../../build/base/mm.o 
             
 > @echo Compiling base/tunnel.c ...
         

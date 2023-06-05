@@ -1,4 +1,4 @@
-CPARAMS=-ffreestanding -O2 -Wall -Wextra -no-pie
+CPARAMS=-ffreestanding -O0 -Wall -Wextra -no-pie -fno-pic
 .RECIPEPREFIX = >
 
 all:
@@ -16,6 +16,10 @@ all:
 > @echo Compiling std/memcpy.c ...
         
 > @i686-linux-gnu-gcc -c memcpy.c $(CPARAMS) -o ../../build/std/memcpy.o 
+            
+> @echo Compiling std/memset.c ...
+        
+> @i686-linux-gnu-gcc -c memset.c $(CPARAMS) -o ../../build/std/memset.o 
             
 > @echo Compiling std/stdio.c ...
         
