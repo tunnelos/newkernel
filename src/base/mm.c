@@ -1,11 +1,12 @@
-#include "../include/mm.h"
+#include <mm.h>
 
 #include <stddef.h>
 
-#include "../include/tunnel.h"
-#include "../include/math.h"
-#include "../include/serial.h"
-#include "../include/stdlib.h"
+#include <tunnel.h>
+#include <math.h>
+#include <serial.h>
+#include <stdlib.h>
+#include <tools.h>
 
 int __mm_pointer = 0;
 int __mm_index = 0;
@@ -14,12 +15,13 @@ void __mm_setup(tunnel_memory_map_t *map) {
     int m = MEMORY_X;
     int i = 0;
     while(i < m) {
-        //__serial_write_fmt("CPU %d -> tos > Clean %d.\n", __tools_get_cpu() - 1, i);
+        // __serial_write_fmt("CPU %d -> tos > Clean %d.\n", __tools_get_cpu() - 1, i);
         map->meta[i].address = &map->blockdata[i];
         map->meta[i].have = 0;
         map->meta[i].free = true;
         i++;
     }
+    // memset(map, 0, sizeof(tunnel_memory_map_t));
     return;
 }
 
@@ -32,7 +34,7 @@ int __mm_findoffset(int blocks, tunnel_memory_map_t *map) {
         // find free block offset
         while(!map->meta[o].free) o++;
         if(o >= MEMORY_X) return -1;
-        //f ind free blocks on this offset
+        //find free blocks on this offset
         while(map->meta[o + p].free) p++;
         if(blocks <= p) return o;
         else {
@@ -65,15 +67,18 @@ void *malloc(size_t size) {
         tunnel_config.tmap->meta[state[0]].have++;
         state[1]++;
     }
-    //__serial_write_fmt("CPU %d -> tos > Allocated %d blocks of memory on address %l %X (requested %d bytes)\r\n", __tools_get_cpu() - 1, state[4], (uint64_t)tunnelos_sysinfo.mm->meta[state[0]].address, size);
-    __serial_write_fmt("Allocated %d blocks of memory of address ", state[4]);
-    __serial_write_fmt("%X (requested ", (uint32_t)(tunnel_config.tmap->meta[state[0]].address));
-    __serial_write_fmt("%d bytes)\r\n", size);
 
-    memset(tunnel_config.tmap->meta[state[0]].address, 0, size);
+    char *block_string = "blocks";
+
+    if (state[4] <= 1) {
+        block_string = "block";
+    }
+
+    // __serial_write_fmt("CPU %d -> tos > Allocated %d blocks of memory on address %l %X (requested %d bytes)\r\n", __tools_get_cpu() - 1, state[4], (uint64_t)tunnelos_sysinfo.mm->meta[state[0]].address, size);
+    if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Allocated %d %s of memory at address %X (requested %d bytes)\r\n", __tools_get_cpu() - 1, state[4], block_string, (uint32_t)(tunnel_config.tmap->meta[state[0]].address), size);
+
+    // memset(tunnel_config.tmap->meta[state[0]].address, 0, size);
     return tunnel_config.tmap->meta[state[0]].address;
-    
-    return NULL;
 }
 
 void *calloc(int count, size_t size) {
@@ -96,19 +101,27 @@ tunnel_memory_block_t __mm_get_blockinformation(void *address) {
 
 void *realloc(void *address, size_t size) {
     void *new_addr = malloc(size);
-    void *old = address;
+    // void *old = address;
     int old_size = __mm_get_blockinformation(address).have;
     if(old_size == 0) old_size = 1;
     old_size *= 256;
-    int i = 0;
-    char *data_new = (char *)new_addr;
-    char *data_old = (char *)old;
-    while(i < old_size) {
-        data_new[i] = data_old[i];
-        i++;
-    }
+    // int i = 0;
+    // char *data_new = (char *)new_addr;
+    // char *data_old = (char *)old;
+    // while(i < old_size) {
+    //     data_new[i] = data_old[i];
+    //     i++;
+    // }
+    memcpy(new_addr, address, ((size_t)old_size > size) ? (size_t)old_size : size);
     free(address);
-    __serial_write_fmt("Reallocated %d blocks\r\n", old_size / 256);
+
+    char *block_string = "blocks";
+
+    if ((old_size / 256) <= 1) {
+        block_string = "block";
+    }
+
+    if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Reallocated %d %s at at address %X (new addr %X)\r\n", __tools_get_cpu() - 1, old_size / 256, block_string, address, new_addr);
     return new_addr;
 }
 
@@ -130,6 +143,11 @@ void free(void *address) {
         i++;
     }
     __mm_index -= blks;
-    __serial_write_fmt("Freed %d blocks\r\n", blks);
+    char *block_string = "blocks";
+
+    if (blks <= 1) {
+        block_string = "block";
+    }
+    if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Freed %d %s at address %X\r\n", __tools_get_cpu() - 1, blks, block_string, address);
     return;
 }

@@ -1,25 +1,36 @@
-#include "../include/idt.h"
-#include "../include/idt_stubs.h"
-#include "../include/serial.h"
+#include <idt.h>
+#include <idt_stubs.h>
+#include <serial.h>
+#include <io.h>
 
-void __idt_exception_handler(int interrupt_id) {
-    __serial_write_fmt("Exception %d!\r\n", interrupt_id);
+void *__idt_stub_table[256] = {};
+
+void __idt_exception_handler(int interrupt_id, void *eip, uint32_t cs, uint32_t eflags) {
+    __serial_write_fmt("Exception %d", interrupt_id);
+    __serial_write_fmt(" at 0x%X!\r\n", eip);
+
+    while (true) {
+        __serial_write_fmt("Exception %d", interrupt_id);
+        __serial_write_fmt(" at 0x%X!\r\n", eip); 
+    }
 }
-void __idt_interrupt_handler(int interrupt_id) {
+void __idt_interrupt_handler(int interrupt_id, void *eip, uint32_t cs, uint32_t eflags) {
     __serial_write_fmt("Interrupt %d!\r\n", interrupt_id);
 }
 
 void __idt_setDescriptor(uint8_t vec, void *isrfunc, uint8_t flags) {
     idt_entry_t *entry = &__idt_table[vec];
     entry->isr_low = (uint32_t)isrfunc & 0xFFFF;
-    entry->kernel_cs = 0x08; // change to 0x08 if it gonna crash
+    entry->kernel_cs = 0x01; // change to 0x08 if it gonna crash
     entry->attributes = flags;
     entry->isr_high = (uint32_t)isrfunc >> 16;
     entry->reserved = 0;
 }
 
 void __idt_init() {
-    __idt_pointer.base = (uint32_t)&__idt_table[0];
+    __asm__ volatile ("cli"); // unset the interrupt flag
+
+    __idt_pointer.base = (uint32_t)__idt_table;
     __idt_pointer.limit = (uint16_t)sizeof(idt_entry_t) * 256 - 1;
 
     __idt_stub_table[0] = isr_stub_0;
@@ -70,11 +81,22 @@ void __idt_init() {
         vec++;
     }
 
+    outb(0x20, 0x11); io_wait();
+    outb(0xA0, 0x11); io_wait();
+    outb(0x21, 0x20); io_wait();
+    outb(0xA1, 0x28); io_wait();
+    outb(0x21, 0x04); io_wait();
+    outb(0xA1, 0x02); io_wait();
+    outb(0x21, 0x01); io_wait();
+    outb(0xa1, 0X91); io_wait();
+    outb(0x21, 0x00); io_wait();
+    outb(0xA1, 0x00); io_wait();
+
     __asm__ volatile ("lidt %0" : : "m"(__idt_pointer)); // load the new IDT
     __asm__ volatile ("sti"); // set the interrupt flag
-    __asm__ volatile ("int $100");
-    __asm__ volatile ("int $100");
-    __asm__ volatile ("int $100");
-    __asm__ volatile ("int $100");
-    __asm__ volatile ("ret");
+    // __asm__ volatile ("int $9");
+    // __asm__ volatile ("int $9");
+    // __asm__ volatile ("int $9");
+    // __asm__ volatile ("int $9");
+    // __asm__ volatile ("ret");
 }

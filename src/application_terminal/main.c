@@ -1,23 +1,25 @@
 #include <stdint.h>
-#include "../include/application_terminal/main.h"
-#include "../include/stdio.h"
-#include "../include/ps2keyboard.h"
-#include "../include/terminal80x25.h"
-#include "../include/serial.h"
-#include "../include/string.h"
-#include "../include/tunnel.h"
-#include "../include/vga80x25.h"
+#include <application_terminal/main.h>
+#include <stdio.h>
+#include <ps2keyboard.h>
+#include <terminal80x25.h>
+#include <serial.h>
+#include <string.h>
+#include <tunnel.h>
+#include <vga80x25.h>
 #include <stdlib.h>
 
-#include "../include/application_bootscreen/main.h"
-#include "../include/application_help/main.h"
-#include "../include/application_enableints/main.h"
+#include <application_bootscreen/main.h>
+#include <application_help/main.h>
+#include <application_enableints/main.h>
+#include <application_lsblk/main.h>
 
 bool __applcation_terminal_isCommand(const char *input) {
     if (!strcmp(input, "help")) return true;
     if (!strcmp(input, "bootscreen")) return true;
     if (!strcmp(input, "terminal")) return true;
     if (!strcmp(input, "enableints")) return true;
+    if (!strcmp(input, "lsblk")) return true;
 
     return false;
 }
@@ -35,6 +37,9 @@ void __application_terminal_executeApplication(const char *input) {
     if (!strcmp(input, "enableints")) {
         __application_enableints_init();
     }
+    if (!strcmp(input, "lsblk")) {
+        __application_lsblk_init();
+    }
 }
 
 void __application_terminal_unlightpointer(uint16_t p, char *buffer) {
@@ -45,7 +50,7 @@ void __application_terminal_unlightpointer(uint16_t p, char *buffer) {
     pos.x = tunnel_config.terminal.column - ((p == 0) ? 0 : 1);
     pos.y = tunnel_config.terminal.row;
 
-    tunnel_config.terminal.buffer[__terminal_getPosition(pos)] = vga_entry(
+    tunnel_config.terminal.buffer[tunnel_config.terminal.get_1d_position(pos)] = vga_entry(
         prev_char,
         vga_entry_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK)
     );
@@ -58,7 +63,7 @@ void __application_terminal_lightpointer(uint16_t p, char *buffer) {
     pos.x = tunnel_config.terminal.column - ((p == 0) ? 0 : 1);
     pos.y = tunnel_config.terminal.row;
 
-    tunnel_config.terminal.buffer[__terminal_getPosition(pos)] = vga_entry(
+    tunnel_config.terminal.buffer[tunnel_config.terminal.get_1d_position(pos)] = vga_entry(
         prev_char,
         vga_entry_color(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_GREEN)
     );
@@ -77,9 +82,9 @@ void __application_terminal_init() {
 
     while(1) {
         uint8_t scancode = __keyboard_ps2_getScancode();
-        while(scancode == 0) {
-            scancode = __keyboard_ps2_getScancode();
-        }
+        // while(scancode == 0) {
+        //     scancode = __keyboard_ps2_getScancode();
+        // }
         if (scancode != 0) {
             //__serial_write_fmt("Scancode: %d\r\n", scancode);
             switch(scancode) {
@@ -99,7 +104,7 @@ void __application_terminal_init() {
                     buffer_pointer--;
                     buffer[buffer_pointer] = 0;
 
-                    __terminal_putBackspace();
+                    tunnel_config.terminal.put_backspace();
 
                     __serial_write_fmt("New buffer: %s\r\n", buffer);
 
@@ -119,6 +124,9 @@ void __application_terminal_init() {
                     } else {
                         __application_terminal_executeApplication(buffer);
                     }
+
+                    int testlol = 2048;
+                    testlol *= 2048;
 
                     puts("\n> ");
 

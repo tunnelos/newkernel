@@ -1,10 +1,13 @@
-#include "../include/application_bootscreen/main.h"
+#include <application_bootscreen/main.h>
 
-#include "../include/terminal80x25.h"
-#include "../include/tunnel.h"
-#include "../include/vga80x25.h"
+#include <terminal80x25.h>
+#include <tunnel.h>
+#include <vga80x25.h>
 
-#include "../include/string.h"
+#include <string.h>
+
+#include <stdlib.h>
+#include <stdio.h>
 
 void __app_bootscreen_init() {
     vector2d_t old_pos;
@@ -17,10 +20,17 @@ void __app_bootscreen_init() {
     tunnel_config.terminal.column = 0;
     tunnel_config.terminal.row = 0;
     tunnel_config.terminal.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-    
-    const char *name = "Tunnel OS Loader";
+    char *buffer = calloc(1, 128);
 
-    __terminal_write(name);
+    
+
+    sprintf(buffer, "Tunnel OS Loader (%s) %s", "dev", "1.0");
+
+    buffer = realloc(buffer, 512);
+
+    tunnel_config.terminal.write(buffer);
+    
+    free(buffer);
     
     uint8_t colortable[14] = {
         VGA_COLOR_BLUE,
@@ -42,11 +52,11 @@ void __app_bootscreen_init() {
     uint8_t i = 0;
     uint8_t offset = 0;
 
-    while(i < ((80 - strlen(name)) / 2)) {
-        __terminal_setColor(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
+    while(i < ((80 - strlen(buffer)) / 2)) {
+        tunnel_config.terminal.set_color(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
         if((i + 1) != 35) {
-            __terminal_putc('.');
-            __terminal_putc(' ');
+            tunnel_config.terminal.putc('.');
+            tunnel_config.terminal.putc(' ');
         }
         i++;
     }
@@ -54,13 +64,13 @@ void __app_bootscreen_init() {
     tunnel_config.terminal.column = 0;
     tunnel_config.terminal.row = 1;
 
-    __terminal_setColor(vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK));
+    tunnel_config.terminal.set_color(vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK));
 
     i = 0;
     offset++;
     while(i < 80) {
-        __terminal_setColor(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
-        __terminal_putc(0xDC);
+        tunnel_config.terminal.set_color(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
+        tunnel_config.terminal.putc(0xDC);
         i++;
     }
 
@@ -69,8 +79,8 @@ void __app_bootscreen_init() {
 
     i = 0;
     while(i < 80) {
-        __terminal_setColor(vga_entry_color(colortable[i % 14], VGA_COLOR_BLACK));
-        __terminal_putc(0xDF);
+        tunnel_config.terminal.set_color(vga_entry_color(colortable[i % 14], VGA_COLOR_BLACK));
+        tunnel_config.terminal.putc(0xDF);
         i++;
     }
 

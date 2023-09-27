@@ -5,6 +5,7 @@
 
 typedef struct tunnel_configuration_t {
     terminal_t terminal;
+    bool debug;
     tunnel_memory_map_t *tmap;
 } tunnel_configuration_t;
 

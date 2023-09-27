@@ -18,13 +18,11 @@ var list_full = "";
 
 var pattern_isr_noerr = (int = 0) => {
     var res = `isr_stub_${int}:
-    push ebp
-    mov ebp, esp
-    mov edi, ${int}
-    mov dword [ebp-8], edi
-    mov eax, dword [ebp-8]
+    pushad
+    cld
+    push ${int}
     call __idt_interrupt_handler
-    pop ebp
+    popad
     iret
 
 `;
@@ -33,13 +31,11 @@ var pattern_isr_noerr = (int = 0) => {
 
 var pattern_isr_err = (int = 0) => {
     var res = `isr_stub_${int}:
-    push ebp
-    mov ebp, esp
-    mov edi, ${int}
-    mov dword [ebp-8], edi
-    mov eax, dword [ebp-8]
+    pushad
+    cld
+    push ${int}
     call __idt_exception_handler
-    pop ebp
+    popad
     iret
 
 `;

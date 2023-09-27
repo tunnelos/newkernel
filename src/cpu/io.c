@@ -1,4 +1,4 @@
-#include "../include/io.h"
+#include <io.h>
 
 uint8_t inb(uint16_t port) {
     uint8_t val;
@@ -56,5 +56,11 @@ void outl(uint16_t port, uint32_t val) {
 // waits 1-4 ns
 void io_wait() {
     outb(0x81, 0);
+    return;
+}
+
+void insl(uint16_t reg, uint32_t *buffer, int quads) {
+    int index = 0;
+    while(index < quads) buffer[index++] = inl(reg);
     return;
 }

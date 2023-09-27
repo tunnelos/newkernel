@@ -1,9 +1,11 @@
-#include "../include/stdio.h"
-#include "../include/terminal80x25.h"
-#include "../include/string.h"
-#include "../include/math.h"
+#include <stdio.h>
+#include <terminal80x25.h>
+#include <string.h>
+#include <math.h>
 
 #include <stdarg.h>
+
+#include <tunnel.h>
 
 void sprintf(char *str, const char *fmt, ...) {
     va_list ap;
@@ -93,10 +95,10 @@ void sprintf(char *str, const char *fmt, ...) {
 }
 
 void putc(const char c) {
-    __terminal_putc(c);
+    tunnel_config.terminal.putc(c);
 }
 void puts(const char *str) {
-    __terminal_write(str);
+    tunnel_config.terminal.write(str);
 }
 
 int atoi(const char *str) {

@@ -1,6 +1,6 @@
-#include "../include/assert_fail.h"
-#include "../include/terminal80x25.h"
-#include "../include/stdio.h"
+#include <assert_fail.h>
+#include <terminal80x25.h>
+#include <stdio.h>
 
 void __assert_fail(
     const char *__assertion, 

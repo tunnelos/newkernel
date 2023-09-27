@@ -1,8 +1,9 @@
-#include "../include/serial.h"
-#include "../include/io.h"
+#include <serial.h>
+#include <io.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <stdarg.h>
-#include "../include/stdio.h"
-#include "../include/string.h"
 
 int __serial_got_signal() {
     return inb(PORT + 5) & 1;

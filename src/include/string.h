@@ -20,3 +20,5 @@ char *strrchr(const char *s, char c);
 float strtof(const char *nptr, char **endptr);
 char *strcat(char *dest, const char *src);
 char *strncat(char *dest, const char *src, size_t n);
+
+void *memmove(void *dest, const void *src, size_t n);

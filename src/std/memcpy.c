@@ -1,4 +1,4 @@
-#include "../include/stdlib.h"
+#include <stdlib.h>
 
 void *memcpy(void *dest, const void *src, const size_t size) {
     size_t i = 0;

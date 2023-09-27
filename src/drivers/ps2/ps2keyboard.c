@@ -1,6 +1,5 @@
-#include "../include/ps2keyboard.h"
-
-#include "../include/io.h"
+#include <ps2keyboard.h>
+#include <io.h>
 
 char __keyboard_ps2_lookuptable[256] = {'?',     '?',     '1',     '2',    '3',      '4',      '5',      '6',
                                         '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
@@ -21,18 +20,13 @@ bool __keyboard_ps2_init() {
 }
 
 bool __keyboard_ps2_isTyping() {
-    if (inb(0x64) & 1) {
-        uint8_t scancode = inb(0x60);
-        if(!(scancode & 0x80)) {
-            return true;
-        }
-        return false;
-    }
-    return false;
+    return __keyboard_ps2_getScancode() != 0;
 }
 
 uint8_t __keyboard_ps2_getScancode() {
-    if (inb(0x64) & 1) {
+    uint8_t data = inb(0x64) & 1;
+
+    if (data) {
         uint8_t scancode = inb(0x60);
         if(!(scancode & 0x80)) {
             return scancode;

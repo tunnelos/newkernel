@@ -1,6 +1,6 @@
-#include "../include/math.h"
-#include "../include/stdint.h"
-#include "../include/assert.h"
+#include <math.h>
+#include <stdint.h>
+#include <assert.h>
 
 int16_t compare_float(float f1, float f2){
     float precision = 0.000001;

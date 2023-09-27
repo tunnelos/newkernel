@@ -1,4 +1,4 @@
-#include "../include/tss.h"
+#include <tss.h>
 
 #pragma pack(push, 1)
 
