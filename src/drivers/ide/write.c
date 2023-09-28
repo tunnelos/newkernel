@@ -1,5 +1,7 @@
 #include <drivers/ide/ide.h>
 
+#include <io.h>
+
 void __ide_write(uint8_t channel, uint8_t reg, uint8_t data) {
     ide_channel_reg_t cc = __ide_channels[channel];
     if(reg > 0x07 && reg < 0x0C) __ide_write(channel, ATA_REG_CONTROL, 0x80 | cc.no_int);

@@ -1,8 +1,10 @@
 include codetree
 export $(shell sed 's/=.*//' codetree)
 
+RANDOM := $(shell od -An -N2 -i /dev/random | tr -d ' ')
+
 vhd:
-	@dd if=/dev/zero of=VHD.img bs=1M count=512	
+	@dd if=/dev/zero of=VHD$(RANDOM).img bs=1M count=512	
 kernelboot:
 	@qemu-system-i386 -m 32M -kernel ../build/kernel.elf -no-shutdown -no-reboot -s -serial stdio -drive file=VHD.img,format=raw,index=0,media=disk #-d int
 kernelbootiso:
@@ -14,8 +16,8 @@ buildimage:
 	@grub-mkrescue -o ../build/kernel/kernel.iso ../build/kernel/tree
 	@rm -r ../build/kernel/tree
 process_debugging:
-	@objcopy --only-keep-debug ../build/kernel.elf ../build/kernel/kernel.sym
-	@objdump -D ../build/kernel.elf > ../build/kernel/kernel.txt
+	@objcopy --only-keep-debug ../build/kernel.elf ../build/kernel.sym
+	@objdump -D ../build/kernel.elf > ../build/kernel.txt
 linkage:
 	@mkdir -p ../build/kernel
 

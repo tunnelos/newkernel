@@ -4,7 +4,7 @@
 .set ALIGN,    1<<0                       # align loaded modules on page boundaries
 .set MEMINFO,  1<<1                       # provide memory map
 .set MONINFO,  1<<2                       # set video resolution
-.set FLAGS,    ALIGN | MEMINFO            # this is the Multiboot 'flag' field
+.set FLAGS,    ALIGN | MEMINFO | MONINFO            # this is the Multiboot 'flag' field
 .set MAGIC,    0x1BADB002                 # 'magic number' lets bootloader find the header
 .set CHECKSUM, -(MAGIC + FLAGS)           # checksum of above, to prove we are multiboot
 
@@ -14,9 +14,15 @@
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
-.long 0, 0, 0, 0, 0
-.long 1
-.long 80, 30, 0
+.long 0
+.long 0
+.long 0
+.long 0
+.long 0
+.long 0
+.long 1280
+.long 720
+.long 32
 
 # Allocate the initial stack.
 .section .bootstrap_stack, "aw", @nobits
@@ -42,6 +48,8 @@ boot_page_table4:
 boot_page_table5:
 	.skip 4096
 boot_page_table6:
+	.skip 4096
+boot_page_table7:
 	.skip 4096
 boot_memorytables:
 	.skip 32
@@ -146,12 +154,30 @@ _start:
 
 3:
 	# Map VGA video memory to 0x00400000 as "present, writable".
-	movl $(0x000B8000 | 0x003), boot_page_table2 - 0xC0000000 + 0 * 4
-	movl $(0x000B9000 | 0x003), boot_page_table2 - 0xC0000000 + 1 * 4
+	movl    %ebx, %esi
+	movl    $boot_page_table2+1073741824, %edx
+	movl    $753664, %eax
+.L2:
+	movl    %eax, %ecx
+	orl     $3, %ecx
+    movl    %ecx, (%edx)
+    addl    $4096, %eax
+    addl    $4, %edx
+    cmpl    $4947968, %eax
+    jne     .L2
+    movl    $0, %eax
+	movl    $0x000BA000, %ebx
+	movl    $0, %ecx
+	movl    $0, %edx
+
+	movl $(0x000BA000 | 0x003), boot_page_table2 - 0xC0000000 + 2 * 4
+
 	# Map Multiboot structure
+
+	mov %esi, %ebx
 	
 	orl $0x003, %ebx
-	movl %ebx, boot_page_table2 - 0xC0000000 + 2 * 4 
+	movl %ebx, boot_page_table7 - 0xC0000000 + 2 * 4 
 
 	# Map free memory
 	
@@ -186,7 +212,7 @@ _start:
 
 10:
 	movl $0x01000000, %eax # physical address
-	movl boot_memorytables - 0xC0000000 + 0, %esi
+	movl boot_memorytables - 0xC0000000 + 0, %esi # virtual address
 	movl $0, %edx # tb 2
 11:
 	movl $0, %ecx # table pointer
@@ -230,6 +256,7 @@ _start:
 	movl $(boot_page_table4 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 3 * 4
 	movl $(boot_page_table5 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 4 * 4
 	movl $(boot_page_table6 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 5 * 4
+	movl $(boot_page_table7 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 6 * 4
 
 	# Set cr3 to the address of the boot_page_directory.
 	movl $(boot_page_directory - 0xC0000000), %ecx

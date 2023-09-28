@@ -14,6 +14,7 @@ int itoa2(int num, char *buffer, int zeros);
 char itoh(int num, bool upper);
 
 char *ftoa(float num, char *buffer);
+char *ftoa_ex(float num, char *buffer, int afterpoints);
 
 int atoi(const char *str);
 

@@ -9,10 +9,17 @@
 #include <vga80x25.h>
 #include <stdlib.h>
 
+#include <ctype.h>
+
 #include <application_bootscreen/main.h>
 #include <application_help/main.h>
 #include <application_enableints/main.h>
 #include <application_lsblk/main.h>
+
+const char *__application_terminal_autostart[10] ={
+    "lsblk",
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
 
 bool __applcation_terminal_isCommand(const char *input) {
     if (!strcmp(input, "help")) return true;
@@ -75,6 +82,14 @@ void __application_terminal_init() {
 
     bool inCapsMode = false;
     bool lShift = false;
+
+    int m = 0 ;
+    while (m < 10) {
+        if (__application_terminal_autostart[m] != NULL) {
+            __application_terminal_executeApplication(__application_terminal_autostart[m]);
+        }
+        m++;
+    }
 
     puts("\n> ");
 

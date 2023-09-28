@@ -1,0 +1,3 @@
+[submodule "src/external/cJSON"]
+	path = src/external/cJSON
+	url = https://github.com/tunnelos/cJSON.git

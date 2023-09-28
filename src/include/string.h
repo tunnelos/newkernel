@@ -4,11 +4,6 @@
 
 size_t strlen(const char *str);
 
-char *tolower(char *data);
-char *toupper(char *data);
-char tolowerchar(char data);
-char toupperchar(char data);
-
 int strncmp(const char *s1, const char *s2, size_t n);
 int strcmp(const char *s1, const char *s2);
 

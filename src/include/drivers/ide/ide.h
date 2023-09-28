@@ -23,6 +23,7 @@ typedef struct ide_dev_t {
     // In kilobits;
     uint32_t size;
     uint8_t model[41];
+    char device_naming[3];
 } ide_dev_t;
 typedef struct ide_rw_t {
     //0 - read | 1 - write

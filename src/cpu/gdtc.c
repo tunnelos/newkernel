@@ -8,7 +8,7 @@ void __gdt_setEntry(uint8_t *target, gdt_big_entry_t source) {
     
     //if (source.limit > 0xFFFFF) {kerror("GDT cannot encode limits larger than 0xFFFFF");}
     // printf("%X %X\n", source.limit, source.base);
-    // assert(source.limit < 0xFFFFF || source.limit == 0xFFFFF);
+    assert(source.limit < 0xFFFFF || source.limit == 0xFFFFF);
     // if (source.limit > 0xFFFFF) {
     //     source.limit = 0xFFFFF;
     // }
@@ -43,12 +43,12 @@ void __gdt_init() {
     b.base = 0xC0000000;
     b.limit = 0x000FFFFF;
     b.access = 0b10011010;
-    b.flags = 0x20;
+    b.flags = 0b00001100;
     __gdt_setEntry((uint8_t *)&__gdt_entries[CS_KRN], b);    
 
     b.base = 0xC0000000;
     b.limit = 0x000FFFFF;
-    b.flags = 0x20;
+    b.flags = 0b00001100;
     b.access = 0b10011010;
     __gdt_setEntry((uint8_t *)&__gdt_entries[DS_KRN], b);
 

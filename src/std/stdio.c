@@ -128,13 +128,16 @@ char *strnrev(char* src, size_t len) {
 }
 
 char *ftoa(float num, char* buffer) {
-    int afterpoint = 6;
+    return ftoa_ex(num, buffer, 6);
+}
+
+char *ftoa_ex(float num, char* buffer, int afterpoints) {
+    int afterpoint = afterpoints;
 
     int ipart = (int)num;
     float fpart = num - (float)ipart;
  
-    //int i = intToStr(ipart, res, 0);
-    int i = itoa2(ipart, buffer, 0);
+    int i = itoa2(ipart, buffer, 1);
 
     // check for display option after point
     if (afterpoint != 0) {

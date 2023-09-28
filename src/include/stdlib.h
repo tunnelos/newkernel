@@ -9,3 +9,8 @@ void *malloc(size_t size);
 void *calloc(int count, size_t size);
 void *realloc(void *address, size_t size);
 void free(void *address);
+
+int rand();
+void srand(int seed);
+
+double strtod(const char *nptr, char **endptr);

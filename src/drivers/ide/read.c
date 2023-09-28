@@ -1,5 +1,7 @@
 #include <drivers/ide/ide.h>
 
+#include <io.h>
+
 uint8_t __ide_read(uint8_t channel, uint8_t reg) {
     uint8_t res = 0;
     ide_channel_reg_t cc = __ide_channels[channel];

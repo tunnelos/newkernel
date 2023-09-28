@@ -33,7 +33,7 @@ void kernel_main_fun1() {
 void kernel_main(void) {
 	__serial_write_fmt("Welcome to the Tunnel OS!\r\n");
 	
-	tunnel_config.debug = false;
+	tunnel_config.debug = true;
 
 	tunnel_config.terminal = __terminal80x25_createTerminal();
 
@@ -45,11 +45,11 @@ void kernel_main(void) {
 
 	__service_startInitService(tunnel_config.terminal.init, "Text Framebuffer", true);
 
-	__service_startInitService(__gdt_init, "GDT", true);
+	// __service_startInitService(__gdt_init, "GDT", true);
 
 	// __gdt_init();
 
-	multiboot_info_t *info = (multiboot_info_t *)0x00402000;
+	multiboot_info_t *info = (multiboot_info_t *)0x01802000;
 	tunnel_config.tmap = (tunnel_memory_map_t *)0x00800000;
 
 	// __serial_write_fmt("Increments: %d\r\n", ((uint32_t *)0x00800000)[0]);
