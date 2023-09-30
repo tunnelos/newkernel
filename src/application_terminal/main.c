@@ -16,36 +16,48 @@
 #include <application_enableints/main.h>
 #include <application_lsblk/main.h>
 
-const char *__application_terminal_autostart[10] ={
-    "lsblk",
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
+#include <vector_constcharp/def.h>
+
+#include <drivers/ide/ide.h>
+
+#include <etc/appman.h>
+
+// const char *__application_terminal_autostart[10] ={
+//     "lsblk",
+//     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+// };
 
 bool __applcation_terminal_isCommand(const char *input) {
-    if (!strcmp(input, "help")) return true;
-    if (!strcmp(input, "bootscreen")) return true;
-    if (!strcmp(input, "terminal")) return true;
-    if (!strcmp(input, "enableints")) return true;
-    if (!strcmp(input, "lsblk")) return true;
+    // if (!strcmp(input, "help")) return true;
+    // if (!strcmp(input, "bootscreen")) return true;
+    // if (!strcmp(input, "terminal")) return true;
+    // if (!strcmp(input, "enableints")) return true;
+    // if (!strcmp(input, "lsblk")) return true;
+    command_t cmd = __appman_getCommand(input);
 
-    return false;
+    return cmd.init != NULL;
 }
 
 void __application_terminal_executeApplication(const char *input) {
-    if (!strcmp(input, "help")) {
-        __application_help_init();
-    }
-    if (!strcmp(input, "bootscreen")) {
-        __app_bootscreen_init();
-    }
-    if (!strcmp(input, "terminal")) {
-        __application_terminal_init();
-    }
-    if (!strcmp(input, "enableints")) {
-        __application_enableints_init();
-    }
-    if (!strcmp(input, "lsblk")) {
-        __application_lsblk_init();
+    if (!__applcation_terminal_isCommand(input)) return;
+    // if (!strcmp(input, "help")) {
+    //     __application_help_init();
+    // }
+    // if (!strcmp(input, "bootscreen")) {
+    //     __app_bootscreen_init();
+    // }
+    // if (!strcmp(input, "terminal")) {
+    //     __application_terminal_init();
+    // }
+    // if (!strcmp(input, "enableints")) {
+    //     __application_enableints_init();
+    // }
+    // if (!strcmp(input, "lsblk")) {
+    //     __application_lsblk_init();
+    // }
+    command_t cmd = __appman_getCommand(input);
+    if (cmd.init != NULL) {
+        cmd.init();
     }
 }
 
@@ -76,20 +88,65 @@ void __application_terminal_lightpointer(uint16_t p, char *buffer) {
     );
 }
 
+void __application_terminal_test() {
+    ide_dev_t device = __ide_devices[0];
+
+    if (!device.connected) {
+        puts("IDE device 0 is not connected or is corrupted.\n");
+    } else {
+        puts("Dumping memory to the IDE drive 0.\n");
+        
+        char *address = (char *)tunnel_config.tmap;
+
+        ide_rw_t action;
+        action.buffer = (uint32_t)address;
+        action.drive = 0;
+        action.lba = 0;
+        action.rw = 1;
+        action.selector = 0;
+        action.sectors = (16 * 1024) / 512;
+        __ide_get_access(action);
+
+        puts("Done.\n");
+    }
+}
+
 void __application_terminal_init() {
+    if (__appman_ready()) {
+        __appman_pushCommand("help", "command info", __application_help_init);
+        __appman_pushCommand("bootscreen", "simple bootscreen", __app_bootscreen_init);
+        __appman_pushCommand("terminal", "embedded terminal", __application_terminal_init);
+        __appman_pushCommand("enableints", "enable interrupts", __application_enableints_init);
+        __appman_pushCommand("lsblk", "list block devices", __application_lsblk_init);
+        __appman_pushCommand("exit", "exit the terminal", NULL);
+        __appman_pushCommand("mount", "mount drive 0 as fat32", NULL);
+        __appman_pushCommand("test", "just a test", __application_terminal_test);
+    }
+
+    rsb_array_constcharp *autostart = RSBCreateArrayconstcharp();
+
+    RSBAddElementconstcharp(autostart, "bootscreen");
+    RSBAddElementconstcharp(autostart, "lsblk");
+
     char *buffer = (char *)calloc(256, 1);
     uint16_t buffer_pointer = 0;
 
     bool inCapsMode = false;
     bool lShift = false;
 
-    int m = 0 ;
-    while (m < 10) {
-        if (__application_terminal_autostart[m] != NULL) {
-            __application_terminal_executeApplication(__application_terminal_autostart[m]);
+    unsigned int m = 0 ;
+    while (m < autostart->len) {
+        // if (__application_terminal_autostart[m] != NULL) {
+        //     __application_terminal_executeApplication(__application_terminal_autostart[m]);
+        // }
+        const char *command = RSBGetAtIndexconstcharp(autostart, m);
+        if (command != NULL) {
+            __application_terminal_executeApplication(command);
         }
         m++;
     }
+
+    RSBDestroyconstcharp(autostart);
 
     puts("\n> ");
 

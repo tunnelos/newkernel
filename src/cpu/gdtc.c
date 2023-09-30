@@ -40,13 +40,15 @@ void __gdt_init() {
 
     __gdt_setEntry((uint8_t *)&__gdt_entries[NULENT], b);
     
-    b.base = 0xC0000000;
+    // b.base = 0xC0000000;
+    b.base = 0;
     b.limit = 0x000FFFFF;
     b.access = 0b10011010;
     b.flags = 0b00001100;
     __gdt_setEntry((uint8_t *)&__gdt_entries[CS_KRN], b);    
 
-    b.base = 0xC0000000;
+    // b.base = 0xC0000000;
+    b.base = 0;
     b.limit = 0x000FFFFF;
     b.flags = 0b00001100;
     b.access = 0b10011010;

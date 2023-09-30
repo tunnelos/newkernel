@@ -28,6 +28,12 @@ typedef struct terminal_t {
     void (*clear)();
     void (*reset)();
     void (*slide)();
+
+    vector2d_t (*get_size)();
+
+    void *(*get_static_buffer_address)();
 } terminal_t;
 
 extern terminal_t __global_currentTextTerminal;
+
+terminal_t __text_terminal_createBasicTerminal();

@@ -17,23 +17,52 @@ void __terminal80x25_clear();
 void __terminal80x25_reset();
 void __terminal80x25_slide();
 
+vector2d_t __terminal80x25_getSize() {
+    vector2d_t vec;
+
+    vec.x = 80;
+    vec.y = 25;
+
+    return vec;
+}
+
 void __terminal80x25_init() {
     tunnel_config.terminal.buffer = (uint16_t *)0x00400000;
-
+    __global_currentTextTerminal.buffer = (uint16_t *)0x00400000;
+    
     __global_currentTextTerminal.reset();
     __global_currentTextTerminal.clear();
 }
 
 void __terminal80x25_clear() {
-    uint8_t old_color = tunnel_config.terminal.color;
+    // uint8_t old_color = __global_currentTextTerminal.color;
+    // __global_currentTextTerminal.set_color(vga_entry_color(VGA_COLOR_BLACK, VGA_COLOR_BLACK));
+
+    // for (int y = 0; y < 25; y++) {
+	// 	for (int x = 0; x < 80; x++) {
+	// 		const int index = y * 80 + x;
+	// 		__global_currentTextTerminal.buffer[index] = vga_entry(0xDB, __global_currentTextTerminal.color);
+	// 	}
+	// }
+
+    // __global_currentTextTerminal.set_color(old_color);
+
+    uint8_t old_color = __global_currentTextTerminal.color;
     __global_currentTextTerminal.set_color(vga_entry_color(VGA_COLOR_BLACK, VGA_COLOR_BLACK));
 
-    for (int y = 0; y < 25; y++) {
-		for (int x = 0; x < 80; x++) {
-			const int index = y * 80 + x;
-			tunnel_config.terminal.buffer[index] = vga_entry(0xDB, tunnel_config.terminal.color);
-		}
-	}
+    int w = __global_currentTextTerminal.get_size().x;
+    int h = __global_currentTextTerminal.get_size().y;
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            vector2d_t pos;
+
+            pos.x = x;
+            pos.y = y;
+
+            __global_currentTextTerminal.put_byte(0xDB, __global_currentTextTerminal.color, pos);
+        }
+    }
 
     __global_currentTextTerminal.set_color(old_color);
 }
@@ -42,17 +71,17 @@ void __terminal80x25_slide() {
     // for (int y = 0; y < 25; y++) {
 		// for (int x = 0; x < 80; x++) {
 			// const int index = y * 80 + x;
-			// tunnel_config.terminal.buffer[index] = tunnel_config.terminal.buffer[(index == 0) ? 0 : index - 1];
+			// __global_currentTextTerminal.buffer[index] = __global_currentTextTerminal.buffer[(index == 0) ? 0 : index - 1];
 		// }
 	// }
 
-    memmove((void *)tunnel_config.terminal.buffer, (const void *)(tunnel_config.terminal.buffer + 80*2), 80*25*2);
+    memmove((void *)__global_currentTextTerminal.buffer, (const void *)(__global_currentTextTerminal.buffer + 80*2), 80*25*2);
 
-    // uint8_t old_color = tunnel_config.terminal.color;
+    // uint8_t old_color = __global_currentTextTerminal.color;
     // __terminal80x25_setColor(vga_entry_color(VGA_COLOR_BLACK, VGA_COLOR_BLACK));
 
     // for (int x = 0; x < 80; x++) {
-    //     __terminal80x25_putByte(' ', tunnel_config.terminal.color, (vector2d_t){x, 80});   
+    //     __terminal80x25_putByte(' ', __global_currentTextTerminal.color, (vector2d_t){x, 80});   
     // }
 
     // __terminal80x25_setColor(old_color);
@@ -66,42 +95,42 @@ uint32_t __terminal80x25_getPosition(vector2d_t pos) {
 }
 
 void __terminal80x25_setColor(uint8_t color) {
-    tunnel_config.terminal.color = color;
+    __global_currentTextTerminal.color = color;
 }
 
 void __terminal80x25_putByte(char c, uint8_t color, vector2d_t pos) {
     const int index = __global_currentTextTerminal.get_1d_position(pos);
-    tunnel_config.terminal.buffer[index] = vga_entry(c, color);
+    __global_currentTextTerminal.buffer[index] = vga_entry(c, color);
 }
 
 void __terminal80x25_putc(char c) {
     if (c == '\n') {
-		tunnel_config.terminal.row++;
-		tunnel_config.terminal.column = 0;
+		__global_currentTextTerminal.row++;
+		__global_currentTextTerminal.column = 0;
 
-        if (tunnel_config.terminal.row == 25) {
-            tunnel_config.terminal.row--;
+        if (__global_currentTextTerminal.row == 25) {
+            __global_currentTextTerminal.row--;
             __global_currentTextTerminal.slide();
         }
 		return;
 	}
 
-	if (tunnel_config.terminal.column == 80) {
-		tunnel_config.terminal.column = 0;
-		tunnel_config.terminal.row++;
-		if (tunnel_config.terminal.row == 25) {
-            tunnel_config.terminal.row--;
+	if (__global_currentTextTerminal.column == 80) {
+		__global_currentTextTerminal.column = 0;
+		__global_currentTextTerminal.row++;
+		if (__global_currentTextTerminal.row == 25) {
+            __global_currentTextTerminal.row--;
             __global_currentTextTerminal.slide();
         }
 	}
 
     vector2d_t pos;
-    pos.x = tunnel_config.terminal.column;
-    pos.y = tunnel_config.terminal.row;
+    pos.x = __global_currentTextTerminal.column;
+    pos.y = __global_currentTextTerminal.row;
 
-	__global_currentTextTerminal.put_byte(c, tunnel_config.terminal.color, pos);
+	__global_currentTextTerminal.put_byte(c, __global_currentTextTerminal.color, pos);
 
-	tunnel_config.terminal.column++;
+	__global_currentTextTerminal.column++;
 }
 
 void __terminal80x25_swrite(const char *data, int size) {
@@ -113,32 +142,32 @@ void __terminal80x25_write(const char *data) {
 }
 
 void __terminal80x25_reset() {
-    tunnel_config.terminal.column = 0;
-    tunnel_config.terminal.row = 0;
-    tunnel_config.terminal.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+    __global_currentTextTerminal.column = 0;
+    __global_currentTextTerminal.row = 0;
+    __global_currentTextTerminal.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 }
 
 void __terminal80x25_putBackspace() {
     vector2d_t pos;
 
-    tunnel_config.terminal.column--;
-    if (tunnel_config.terminal.column < 0) {
-        tunnel_config.terminal.column = 0;
-        tunnel_config.terminal.row--;
+    __global_currentTextTerminal.column--;
+    if (__global_currentTextTerminal.column < 0) {
+        __global_currentTextTerminal.column = 0;
+        __global_currentTextTerminal.row--;
 
-        if (tunnel_config.terminal.row < 0) {
-            tunnel_config.terminal.row = 0;
+        if (__global_currentTextTerminal.row < 0) {
+            __global_currentTextTerminal.row = 0;
         }
     }
 
-    pos.x = tunnel_config.terminal.column;
-    pos.y = tunnel_config.terminal.row;
+    pos.x = __global_currentTextTerminal.column;
+    pos.y = __global_currentTextTerminal.row;
 
-    __global_currentTextTerminal.put_byte(' ', tunnel_config.terminal.color, pos);
+    __global_currentTextTerminal.put_byte(' ', __global_currentTextTerminal.color, pos);
 }
 
 terminal_t __terminal80x25_createTerminal() {
-    terminal_t term;
+    terminal_t term = {};
 
     term.clear = __terminal80x25_clear;
     term.get_1d_position = __terminal80x25_getPosition;
@@ -151,6 +180,7 @@ terminal_t __terminal80x25_createTerminal() {
     term.slide = __terminal80x25_slide;
     term.swrite = __terminal80x25_swrite;
     term.write = __terminal80x25_write;
+    term.get_size = __terminal80x25_getSize;
     
     return term;
 }

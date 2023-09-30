@@ -22,6 +22,8 @@
 
 #include <drivers/ide/ide.h>
 
+#include <etc/appman.h>
+
 uint32_t bars[5] = {
 	0x1F0, 0x3F6, 0x170, 0x376, 0x000
 };
@@ -45,7 +47,7 @@ void kernel_main(void) {
 
 	__service_startInitService(tunnel_config.terminal.init, "Text Framebuffer", true);
 
-	// __service_startInitService(__gdt_init, "GDT", true);
+	__service_startInitService(__gdt_init, "GDT", true);
 
 	// __gdt_init();
 
@@ -60,7 +62,9 @@ void kernel_main(void) {
 
 	__service_startInitService(kernel_main_fun1, "IDE", true);
 
-	__service_startInitService(__app_bootscreen_init, "Bootscreen", true);
+	__service_startInitService(__appman_init, "App Manager", true);
+
+	// __service_startInitService(__app_bootscreen_init, "Bootscreen", true);
 
 	__application_terminal_init();
 	// __service_startInitService(__application_terminal_init, "Terminal", true);
