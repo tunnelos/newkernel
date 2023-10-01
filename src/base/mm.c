@@ -49,7 +49,7 @@ int __mm_findoffset(int blocks, tunnel_memory_map_t *map) {
 void *malloc(size_t size) {
     if(size <= 0) return 0;
     int state[6];
-    state[4] = (int)(ceil((float)size / 256.f));
+    state[4] = (int)(ceil((float)size / (float)MEMORY_BLOCK_SIZE));
     if(state[4] == 0) state[4] = 1;
     // state[4] - blocks to allocate
     // state[0] - block offset
@@ -77,6 +77,8 @@ void *malloc(size_t size) {
     // __serial_write_fmt("CPU %d -> tos > Allocated %d blocks of memory on address %l %X (requested %d bytes)\r\n", __tools_get_cpu() - 1, state[4], (uint64_t)tunnelos_sysinfo.mm->meta[state[0]].address, size);
     if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Allocated %d %s of memory at address %X (requested %d bytes)\r\n", __tools_get_cpu() - 1, state[4], block_string, (uint32_t)(tunnel_config.tmap->meta[state[0]].address), size);
 
+    tunnel_config.tmap->statistics.blocks_allocated += state[4];
+
     // memset(tunnel_config.tmap->meta[state[0]].address, 0, size);
     return tunnel_config.tmap->meta[state[0]].address;
 }
@@ -91,7 +93,7 @@ tunnel_memory_block_t __mm_get_blockinformation(void *address) {
     uint32_t adr = (uint32_t)address;
     uint32_t sadr = (uint32_t)(&tunnel_config.tmap->blockdata);
     uint32_t index = adr - sadr;
-    uint32_t blk = floor((float)index / 256.f);
+    uint32_t blk = floor((float)index / (float)MEMORY_BLOCK_SIZE);
     tunnel_memory_block_t bl;
     bl.address = tunnel_config.tmap->meta[blk].address;
     bl.free = tunnel_config.tmap->meta[blk].free;
@@ -100,11 +102,11 @@ tunnel_memory_block_t __mm_get_blockinformation(void *address) {
 }
 
 void *realloc(void *address, size_t size) {
-    void *new_addr = malloc(size);
+    void *new_addr = calloc(1, size);
     // void *old = address;
     int old_size = __mm_get_blockinformation(address).have;
     if(old_size == 0) old_size = 1;
-    old_size *= 256;
+    old_size *= MEMORY_BLOCK_SIZE;
     // int i = 0;
     // char *data_new = (char *)new_addr;
     // char *data_old = (char *)old;
@@ -117,11 +119,16 @@ void *realloc(void *address, size_t size) {
 
     char *block_string = "blocks";
 
-    if ((old_size / 256) <= 1) {
+    if ((old_size / MEMORY_BLOCK_SIZE) <= 1) {
         block_string = "block";
     }
 
-    if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Reallocated %d %s at at address %X (new addr %X)\r\n", __tools_get_cpu() - 1, old_size / 256, block_string, address, new_addr);
+    int blocks_old = old_size / MEMORY_BLOCK_SIZE;
+    int blocks_new = size / MEMORY_BLOCK_SIZE;
+
+    tunnel_config.tmap->statistics.blocks_allocated += (blocks_new - blocks_old);
+
+    if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Reallocated %d %s at at address %X (new addr %X)\r\n", __tools_get_cpu() - 1, old_size / MEMORY_BLOCK_SIZE, block_string, address, new_addr);
     return new_addr;
 }
 
@@ -129,7 +136,7 @@ void free(void *address) {
     uint32_t adr = (uint32_t)address;
     uint32_t sadr = (uint32_t)(&tunnel_config.tmap->blockdata);
     uint32_t index = adr - sadr;
-    int blk = floor((float)index / 256.f);
+    int blk = floor((float)index / (float)MEMORY_BLOCK_SIZE);
     int blks = 0;
     if(blk >= MEMORY_X) return;
     if(blk < 0) return;
@@ -139,7 +146,7 @@ void free(void *address) {
     if(blks == 0) blks = 1;
     while(i < blks) {
         tunnel_config.tmap->meta[blk + i].free = true;
-        memset(tunnel_config.tmap->meta[blk + i].address, 0, 256);
+        memset(tunnel_config.tmap->meta[blk + i].address, 0, MEMORY_BLOCK_SIZE);
         i++;
     }
     __mm_index -= blks;
@@ -149,5 +156,7 @@ void free(void *address) {
         block_string = "block";
     }
     if (tunnel_config.debug) __serial_write_fmt("CPU %d -> Freed %d %s at address %X\r\n", __tools_get_cpu() - 1, blks, block_string, address);
+
+    tunnel_config.tmap->statistics.blocks_allocated -= blks;
     return;
 }

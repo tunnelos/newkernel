@@ -53,18 +53,19 @@ void kernel_main(void) {
 
 	multiboot_info_t *info = (multiboot_info_t *)0x01802000;
 	tunnel_config.tmap = (tunnel_memory_map_t *)0x00800000;
+	tunnel_config.multiboot = info;
 
-	// __serial_write_fmt("Increments: %d\r\n", ((uint32_t *)0x00800000)[0]);
-	// __serial_write_fmt("Mem upper: %X\r\n", info->mem_upper);
+	__serial_write_fmt("Mem lower: %d\r\n", info->mem_lower);
+	__serial_write_fmt("Mem upper: %d\r\n", info->flags);
 
-	tunnel_config.tmap->memsize_kb = info->mem_upper;
+	tunnel_config.tmap->statistics.blocks_allocated = info->mem_upper;
 	__mm_setup(tunnel_config.tmap);
 
 	__service_startInitService(kernel_main_fun1, "IDE", true);
 
 	__service_startInitService(__appman_init, "App Manager", true);
 
-	// __service_startInitService(__app_bootscreen_init, "Bootscreen", true);
+	__service_startInitService(__app_bootscreen_init, "Bootscreen", true);
 
 	__application_terminal_init();
 	// __service_startInitService(__application_terminal_init, "Terminal", true);

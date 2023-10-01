@@ -26,8 +26,6 @@ void __app_bootscreen_init() {
 
     sprintf(buffer, "Tunnel OS Loader (%s) %s", "dev", "1.0");
 
-    buffer = realloc(buffer, 512);
-
     tunnel_config.terminal.write(buffer);
     
     free(buffer);
@@ -52,9 +50,9 @@ void __app_bootscreen_init() {
     uint8_t i = 0;
     uint8_t offset = 0;
 
-    while(i < ((80 - strlen(buffer)) / 2)) {
+    while(i < ((tunnel_config.terminal.get_size().x - strlen(buffer)) / 2)) {
         tunnel_config.terminal.set_color(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
-        if((i + 1) != 35) {
+        if((i + 1) != tunnel_config.terminal.get_size().y) {
             tunnel_config.terminal.putc('.');
             tunnel_config.terminal.putc(' ');
         }

@@ -4,7 +4,7 @@
 .set ALIGN,    1<<0                       # align loaded modules on page boundaries
 .set MEMINFO,  1<<1                       # provide memory map
 .set MONINFO,  1<<2                       # set video resolution
-.set FLAGS,    ALIGN | MEMINFO | MONINFO            # this is the Multiboot 'flag' field
+.set FLAGS,    ALIGN | MEMINFO | MONINFO  # this is the Multiboot 'flag' field
 .set MAGIC,    0x1BADB002                 # 'magic number' lets bootloader find the header
 .set CHECKSUM, -(MAGIC + FLAGS)           # checksum of above, to prove we are multiboot
 
@@ -53,6 +53,8 @@ boot_page_table7:
 	.skip 4096
 boot_memorytables:
 	.skip 32
+multiboot_address:
+	.skip 4
 # Further page tables may be required if the kernel grows beyond 3 MiB.
 
 # The kernel entry point.
@@ -76,6 +78,11 @@ _print_character:
 	pop %ebp
 	ret
 _start:
+	# Map Multiboot structure
+	
+	orl $0x003, %ebx
+	movl %ebx, boot_page_table7 - 0xC0000000 + 2 * 4 
+
 	movl $0x000B8000, %ecx
 	movl $'T', %edx
 	call _print_character
@@ -171,13 +178,6 @@ _start:
 	movl    $0, %edx
 
 	movl $(0x000BA000 | 0x003), boot_page_table2 - 0xC0000000 + 2 * 4
-
-	# Map Multiboot structure
-
-	mov %esi, %ebx
-	
-	orl $0x003, %ebx
-	movl %ebx, boot_page_table7 - 0xC0000000 + 2 * 4 
 
 	# Map free memory
 	

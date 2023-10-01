@@ -33,7 +33,7 @@ RSB_ARRAY_FUNC_GETATINDEX_DEF(type, funname);
 #include <stdlib.h>
 
 #define RSB_ARRAY_FUNC_CREATE_IMPL(funname) RSB_ARRAY_FUNC_CREATE_DEF(funname) {                            \
-    RSB_ARRAY_NAME(funname) *array = (RSB_ARRAY_NAME(funname) *)malloc(sizeof(RSB_ARRAY_NAME(funname)));    \
+    RSB_ARRAY_NAME(funname) *array = (RSB_ARRAY_NAME(funname) *)calloc(1, sizeof(RSB_ARRAY_NAME(funname))); \
                                                                                                             \
     array->len = 0;                                                                                         \
     array->current_index = 0;                                                                               \
@@ -47,7 +47,7 @@ RSB_ARRAY_FUNC_GETATINDEX_DEF(type, funname);
     if (!array) return;                                                                                                     \
                                                                                                                             \
     if (!array->objects) {                                                                                                  \
-        array->objects = (type *)malloc(sizeof(type));                                                                      \
+        array->objects = (type *)calloc(1, sizeof(type));                                                                      \
         array->len = 1;                                                                                                     \
         array->current_index = 0;                                                                                           \
         array->added_elements = 0;                                                                                          \

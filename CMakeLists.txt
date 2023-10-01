@@ -14,20 +14,25 @@ set(BUILD_SHARED_AND_STATIC_LIBS ON)
 SET(ENABLE_CJSON_TEST OFF)
 add_subdirectory(src/external/cJSON)
 
-file(GLOB_RECURSE application_bootscreen CONFIGURE_DEPENDS "src/application_bootscreen/*.c")
-file(GLOB_RECURSE application_help CONFIGURE_DEPENDS "src/application_help/*.c")
-file(GLOB_RECURSE application_terminal CONFIGURE_DEPENDS "src/application_terminal/*.c")
-file(GLOB_RECURSE application_enableints CONFIGURE_DEPENDS "src/applications_enableints/*.c")
-file(GLOB_RECURSE application_lsblk CONFIGURE_DEPENDS "src/application_lsblk/*.c")
-file(GLOB_RECURSE application_clear CONFIGURE_DEPENDS "src/application_clear/*.c")
+# file(GLOB_RECURSE application_bootscreen CONFIGURE_DEPENDS "src/application_bootscreen/*.c")
+# file(GLOB_RECURSE application_help CONFIGURE_DEPENDS "src/application_help/*.c")
+# file(GLOB_RECURSE application_terminal CONFIGURE_DEPENDS "src/application_terminal/*.c")
+# file(GLOB_RECURSE application_enableints CONFIGURE_DEPENDS "src/applications_enableints/*.c")
+# file(GLOB_RECURSE application_lsblk CONFIGURE_DEPENDS "src/application_lsblk/*.c")
+# file(GLOB_RECURSE application_clear CONFIGURE_DEPENDS "src/application_clear/*.c")
+# file(GLOB_RECURSE application_memusage CONFIGURE_DEPENDS "src/application_memusage/*.c")
 file(GLOB_RECURSE kernel_vectors CONFIGURE_DEPENDS "src/vector_*/*.c")
 
-add_library(libapplication_bootscreen STATIC ${application_bootscreen})
-add_library(libapplication_help STATIC ${application_help})
-add_library(libapplication_terminal STATIC ${application_terminal})
-add_library(libapplication_enableints STATIC ${application_enableints})
-add_library(libapplication_lsblk STATIC ${application_lsblk})
-add_library(libapplication_clear STATIC ${application_clear})
+# add_library(libapplication_bootscreen STATIC ${application_bootscreen})
+# add_library(libapplication_help STATIC ${application_help})
+# add_library(libapplication_terminal STATIC ${application_terminal})
+# add_library(libapplication_enableints STATIC ${application_enableints})
+# add_library(libapplication_lsblk STATIC ${application_lsblk})
+# add_library(libapplication_clear STATIC ${application_clear})
+# add_library(libapplication_memusage STATIC ${application_clear})
+
+file(GLOB_RECURSE applications CONFIGURE_DEPENDS "src/application_*/*.c")
+add_library(libapplications STATIC ${applications})
 
 add_library(libkernel_vectors STATIC ${kernel_vectors})
 
@@ -57,15 +62,17 @@ set (CJSON_LIBRARY_PATH ${CMAKE_BINARY_DIR}/src/external/cJSON/libcjson.a)
 
 message(NOTICE ${CJSON_LIBRARY_PATH})
 
-target_link_libraries(libapplication_help ${CJSON_LIBRARY_PATH})
+target_link_libraries(libapplications libkernel_std libkernel_drivers_base libkernel_vectors)
 
-target_link_libraries(libkernel_drivers_base libkernel_std)
+# target_link_libraries(libapplication_help ${CJSON_LIBRARY_PATH})
 
-target_link_libraries(libapplication_clear libkernel_drivers_base)
+# target_link_libraries(libkernel_drivers_base libkernel_std)
 
-target_link_libraries(libapplication_terminal libapplication_bootscreen libapplication_help libapplication_enableints libapplication_lsblk libapplication_clear libkernel_vectors)
+# target_link_libraries(libapplication_clear libkernel_drivers_base)
 
-target_link_libraries(kernel.elf libapplication_terminal)
+# target_link_libraries(libapplication_terminal libapplication_bootscreen libapplication_help libapplication_enableints libapplication_lsblk libapplication_clear libkernel_vectors)
+
+target_link_libraries(kernel.elf libapplications)
 
 # ADD_CUSTOM_COMMAND (TARGET kernel.img
 # 	POST_BUILD
