@@ -1,7 +1,7 @@
 /* Z:\home\mint\tunnelos\kernel\arch\x86_64\fonts\gui.psf (6/1/2023 9:48:22 AM)
    StartOffset(h): 00000000, EndOffset(h): 0000081F, Длина(h): 00000820 */
 
-#define FNT_SIZE 2080
+#include <etc/embeddable/fonts/gui.h>
 
 unsigned int __fonts_gui_size = FNT_SIZE;
 

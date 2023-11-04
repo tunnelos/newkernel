@@ -27,8 +27,8 @@ vector2d_t __terminal80x25_getSize() {
 }
 
 void __terminal80x25_init() {
-    tunnel_config.terminal.buffer = (uint16_t *)0x00400000;
-    __global_currentTextTerminal.buffer = (uint16_t *)0x00400000;
+    tunnel_config.terminal.buffer = (uint8_t *)0x00400000;
+    __global_currentTextTerminal.buffer = (uint8_t *)0x00400000;
     
     __global_currentTextTerminal.reset();
     __global_currentTextTerminal.clear();
@@ -75,7 +75,7 @@ void __terminal80x25_slide() {
 		// }
 	// }
 
-    memmove((void *)__global_currentTextTerminal.buffer, (const void *)(__global_currentTextTerminal.buffer + 80*2), 80*25*2);
+    memmove((void *)__global_currentTextTerminal.buffer, (const void *)((uint16_t *)__global_currentTextTerminal.buffer + __global_currentTextTerminal.get_size().x*2), __global_currentTextTerminal.get_size().x*__global_currentTextTerminal.get_size().y*2);
 
     // uint8_t old_color = __global_currentTextTerminal.color;
     // __terminal80x25_setColor(vga_entry_color(VGA_COLOR_BLACK, VGA_COLOR_BLACK));
@@ -100,7 +100,10 @@ void __terminal80x25_setColor(uint8_t color) {
 
 void __terminal80x25_putByte(char c, uint8_t color, vector2d_t pos) {
     const int index = __global_currentTextTerminal.get_1d_position(pos);
-    __global_currentTextTerminal.buffer[index] = vga_entry(c, color);
+    
+    uint16_t *b = (uint16_t *)__global_currentTextTerminal.buffer;
+
+    b[index] = vga_entry(c, color);
 }
 
 void __terminal80x25_putc(char c) {
@@ -108,17 +111,17 @@ void __terminal80x25_putc(char c) {
 		__global_currentTextTerminal.row++;
 		__global_currentTextTerminal.column = 0;
 
-        if (__global_currentTextTerminal.row == 25) {
+        if (__global_currentTextTerminal.row == __global_currentTextTerminal.get_size().y) {
             __global_currentTextTerminal.row--;
             __global_currentTextTerminal.slide();
         }
 		return;
 	}
 
-	if (__global_currentTextTerminal.column == 80) {
+	if (__global_currentTextTerminal.column == __global_currentTextTerminal.get_size().x) {
 		__global_currentTextTerminal.column = 0;
 		__global_currentTextTerminal.row++;
-		if (__global_currentTextTerminal.row == 25) {
+		if (__global_currentTextTerminal.row == __global_currentTextTerminal.get_size().y) {
             __global_currentTextTerminal.row--;
             __global_currentTextTerminal.slide();
         }

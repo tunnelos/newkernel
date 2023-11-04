@@ -8,7 +8,9 @@ typedef struct terminal_t {
     int row;
     int column;
     uint8_t color;
-    uint16_t *buffer;
+    uint8_t color_fg;
+    uint8_t color_bg;
+    uint8_t *buffer;
 
     // functions
 
