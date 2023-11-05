@@ -101,8 +101,10 @@ void __application_terminal_init() {
     }
     rsb_array_constcharp *autostart = RSBCreateArrayconstcharp();
 
-    RSBAddElementconstcharp(autostart, "bootscreen");
+    // RSBAddElementconstcharp(autostart, "bootscreen");
     RSBAddElementconstcharp(autostart, "lsblk");
+
+    tunnel_config.terminal.set_color(VGA_COLOR_WHITE);
 
     char *buffer = (char *)calloc(256, 1);
     uint16_t buffer_pointer = 0;

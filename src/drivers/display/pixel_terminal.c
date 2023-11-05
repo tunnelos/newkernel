@@ -16,16 +16,16 @@ void __pixel_terminal_init() {
     __global_currentTextTerminal.buffer = (uint8_t *)0x00400000;
     tunnel_config.terminal.buffer = (uint8_t *)0x00400000;
 
-    __serial_write_fmt("pixel init\r\n");
+    // __serial_write_fmt("pixel init\r\n");
 
     __global_currentTextTerminal.reset();
     __global_currentTextTerminal.clear();
 
-    __serial_write_fmt("pixel init done\r\n");
+    // __serial_write_fmt("pixel init done\r\n");
 }
 
 void __pixel_terminal_reset() {
-    __serial_write_fmt("pixel reset\r\n");
+    // __serial_write_fmt("pixel reset\r\n");
 
     __global_currentTextTerminal.column = 0;
     __global_currentTextTerminal.row = 0;
@@ -33,7 +33,7 @@ void __pixel_terminal_reset() {
     __global_currentTextTerminal.color_bg = VGA_COLOR_BLACK;
     __global_currentTextTerminal.color_fg = VGA_COLOR_WHITE;
 
-    __serial_write_fmt("pixel reset done\r\n");
+    // __serial_write_fmt("pixel reset done\r\n");
 }
 
 void __pixel_terminal_swrite(const char *data, int size) {
@@ -56,7 +56,13 @@ void __pixel_terminal_put_backspace() {
     pos.x = __global_currentTextTerminal.column;
     pos.y = __global_currentTextTerminal.row;
 
+    int old_color = __global_currentTextTerminal.color;
+
+    __pixel_terminal_set_color(VGA_COLOR_BLACK);
+
     __global_currentTextTerminal.put_byte(0x13, __global_currentTextTerminal.color, pos);
+
+    __pixel_terminal_set_color(old_color);
 }
 
 void __pixel_terminal_write(const char *str) {
@@ -64,7 +70,7 @@ void __pixel_terminal_write(const char *str) {
 }
 
 void __pixel_terminal_clear() {
-    __serial_write_fmt("pixel clear\r\n");
+    // __serial_write_fmt("pixel clear\r\n");
 
     uint8_t old_color = __global_currentTextTerminal.color;
     __global_currentTextTerminal.set_color(VGA_COLOR_BLACK);
@@ -79,7 +85,7 @@ void __pixel_terminal_clear() {
             pos.x = x;
             pos.y = y;
 
-            __serial_write_fmt("pixel clear at %d %d\r\n", x, y);
+            // __serial_write_fmt("pixel clear at %d %d\r\n", x, y);
 
             __global_currentTextTerminal.put_byte(0x13, __global_currentTextTerminal.color, pos);
         }
@@ -87,11 +93,13 @@ void __pixel_terminal_clear() {
 
     __global_currentTextTerminal.set_color(old_color);
 
-    __serial_write_fmt("pixel clear done\r\n");
+    // __serial_write_fmt("pixel clear done\r\n");
 }
 
 void __pixel_terminal_slide() {
-    memmove((void *)__global_currentTextTerminal.buffer, (const void *)((uint16_t *)__global_currentTextTerminal.buffer + __global_currentTextTerminal.get_size().x*4), __global_currentTextTerminal.get_size().x*__global_currentTextTerminal.get_size().y*4);
+    // memmove((void *)__global_currentTextTerminal.buffer, (const void *)((uint16_t *)__global_currentTextTerminal.buffer + __global_currentTextTerminal.get_size().x*4), __global_currentTextTerminal.get_size().x*__global_currentTextTerminal.get_size().y*4);
+    __pixel_terminal_clear();
+    __pixel_terminal_reset();
 }
 
 void __pixel_terminal_putc(char c) {
@@ -139,45 +147,56 @@ void __pixel_terminal_set_color(uint8_t color) {
 }
 
 void __pixel_terminal_putByte(char c, uint8_t color, vector2d_t pos) {
-    __serial_write_fmt("pixel put byte %c at %d %d\r\n", c, pos.x, pos.y);
+    // __serial_write_fmt("pixel put byte %c at %d %d with color %d\r\n", c, pos.x, pos.y, color);
+    int kx = 0;
 
-    psf2_t *font = (psf2_t *)__fonts_gui;
+    int margin = 1;
+ 
+    uint32_t x, y, line, mask, offs;
 
-    int x = pos.x, y = pos.y, kx = 0, line, mask, offs;
-    //__serial_write_fmt("accessing font at %X\r\n", font);
+    int fb_scanline = 5120;
+
+    psf2_t *font = (psf2_t*)__fonts_gui;
     int bpl = (font->width + 7) / 8;
-    //__serial_write_fmt("accessing font done\r\n");
-    int char_index = 0;
 
-    // char s1[] = {c, 0};
+    int tx = pos.x * font->width;
+    int ty = pos.y * font->height;
 
-    // char *s = s1;
 
-    int fb_scanline = 1;
+    uint32_t col = vga_entry_color32(color, VGA_COLOR_BLACK);
 
-    //__serial_write_fmt("pixel put variables set\r\n");
-
-    unsigned char *glyph = __fonts_gui + font->headersize + (c>0&&c<font->numglyph?c:0)*font->bytesperglyph;
-    offs = (kx * (font->width+1) * 4);
-    for(y = 0; y < font->height; y++) {
-        line= offs; mask = 1 << (font->width - 1);
-
-        //__serial_write_fmt("pixel put byte line %d mask %d y %d\r\n", line, mask, y);
-
-        for(x = 0; x < font->width; x++) {
-            //__serial_write_fmt("pixel put byte x %d\r\n", x);
-            *((uint32_t*)((uint32_t)__global_currentTextTerminal.buffer + line)) = ((int)*glyph) & (mask) ? vga_entry_color32(color, VGA_COLOR_BLACK) : 0;
-            //__serial_write_fmt("pixel put byte new mask %d new line %d\r\n", mask, line);
-            mask >>= 1; line += 4;
+    //72
+    unsigned char *glyph = (unsigned char*)font + font->headersize + (c > 0 && c < font->numglyph ? c : 0)*font->bytesperglyph;
+    offs = (kx * (font->width + margin) * 4);
+    if(kx >= 71) {
+        ty += font->height;
+        kx = 0;
+        tx = 0 - font->width;
+    } else {
+        for(y = 0; y < font->height; y++) {
+            line = offs; 
+            mask = 1 << (font->width - 1);
+            for(x = 0; x < font->width; x++) {
+                // uint32_t *address = 
+                if (((int)*glyph) & (mask)) {
+                    *
+                    (
+                        (uint32_t*)
+                        (
+                            (uint32_t)tunnel_config.terminal.buffer + line + 
+                                (ty * fb_scanline) 
+                            + 
+                                (tx * 4)
+                        )
+                    ) = col;
+                }
+                mask >>= 1; 
+                line += 4;
+            } 
+            glyph += bpl;
+            offs += fb_scanline;
         }
-        //__serial_write_fmt("pixel put byte new mask %d new line %d\r\n", mask, line);
-        *((uint32_t*)((uint32_t)__global_currentTextTerminal.buffer + line)) = 0; glyph += bpl; offs += fb_scanline;
-        //__serial_write_fmt("pixel put byte update done\r\n");
     }
-    kx++;
-    char_index++;
-
-    //__serial_write_fmt("pixel put byte done\r\n");
 }
 
 uint32_t __pixel_terminal_getPosition(vector2d_t pos) {

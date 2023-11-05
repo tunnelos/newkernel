@@ -163,14 +163,14 @@ _start:
 	# Map VGA video memory to 0x00400000 as "present, writable".
 	movl    %ebx, %esi
 	movl    $boot_page_table2+1073741824, %edx
-	movl    $753664, %eax
+	movl    $-50331648, %eax
 .L2:
 	movl    %eax, %ecx
 	orl     $3, %ecx
     movl    %ecx, (%edx)
     addl    $4096, %eax
     addl    $4, %edx
-    cmpl    $4947968, %eax
+    cmpl    $-46137344, %eax
     jne     .L2
     movl    $0, %eax
 	movl    $0x000BA000, %ebx

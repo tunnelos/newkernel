@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#pragma pack(push, 1)
+
 #include <assert.h>
 
 #define RSB_ARRAY_NAME(funname) rsb_array_##funname
@@ -47,14 +49,14 @@ RSB_ARRAY_FUNC_GETATINDEX_DEF(type, funname);
     if (!array) return;                                                                                                     \
                                                                                                                             \
     if (!array->objects) {                                                                                                  \
-        array->objects = (type *)calloc(1, sizeof(type));                                                                      \
+        array->objects = (type *)calloc(1, sizeof(type));                                                                   \
         array->len = 1;                                                                                                     \
         array->current_index = 0;                                                                                           \
         array->added_elements = 0;                                                                                          \
     }                                                                                                                       \
                                                                                                                             \
     if ((array->added_elements + 1) > array->len) {                                                                         \
-        array->objects = (type *)realloc(array->objects, sizeof(type) * array->len + 1);                                    \
+        array->objects = (type *)realloc(array->objects, sizeof(type) * (array->len + 1));                                  \
         array->len++;                                                                                                       \
     }                                                                                                                       \
                                                                                                                             \
@@ -112,6 +114,8 @@ RSB_ARRAY_FUNC_ADDELEMENT_IMPL(type, funname);   \
 RSB_ARRAY_FUNC_POPELEMENT_IMPL(type, funname);   \
                                         \
 RSB_ARRAY_FUNC_GETATINDEX_IMPL(type, funname);
+
+#pragma pack(pop)
 
 #ifdef __cplusplus
 }

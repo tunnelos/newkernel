@@ -22,9 +22,7 @@ void __app_bootscreen_init() {
     tunnel_config.terminal.color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     char *buffer = calloc(1, 128);
 
-    
-
-    sprintf(buffer, "Tunnel OS Loader (%s) %s", "dev", "1.0");
+    sprintf(buffer, "Tunnel OS Loader ( %s ) %s", "dev", "1.0");
 
     tunnel_config.terminal.write(buffer);
     
@@ -84,5 +82,6 @@ void __app_bootscreen_init() {
 
     tunnel_config.terminal.column = old_pos.x;
     tunnel_config.terminal.row = old_pos.y;
-    tunnel_config.terminal.color = old_color;
+
+    tunnel_config.terminal.set_color(old_color);
 }

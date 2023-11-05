@@ -7,7 +7,7 @@
 
 #include <tunnel.h>
 
-void sprintf(char *str, const char *fmt, ...) {
+int sprintf(char *str, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     int i = 0;
@@ -17,21 +17,21 @@ void sprintf(char *str, const char *fmt, ...) {
     while(i < len) {
         switch(fmt[i]){
             case '%': {
-                //__serial_write_fmt("Case %c\n", fmt[i + 1]);
+                __serial_write_fmt("Case %c %d %d\n", fmt[i + 1], i, si);
                 switch(fmt[i + 1]) {
                     case 'c': {
                         char arg = va_arg(ap, int);
                         str[si] = arg;
                         si++;
-                        i += 2;
+                        i++;
                         break;
                     }
                     case 's': {
                         char *arg = va_arg(ap, char *);
                         size_t l = strlen(arg);
                         strncpy(str + si, arg, l);
-                        si += strlen(str);
-                        i += 2;
+                        si += strlen(arg);
+                        i++;
                         break;
                     }
                     case 'i':
@@ -44,7 +44,7 @@ void sprintf(char *str, const char *fmt, ...) {
                             strncpy(str + si, buffer, 20);
                             si += strlen(buffer);
                         }
-                        i += 2;
+                        i++;
                         break;
                     }
                     case 'x':
@@ -54,7 +54,7 @@ void sprintf(char *str, const char *fmt, ...) {
                         itoa(arg, buffer, 16);
                         //trncmp(&str[si], buffer, strlen(buffer));
                         strncpy(str + si, buffer, strlen(buffer));
-                        i += 2;
+                        i++;
                         si += strlen(buffer);
                         break;
                     }
@@ -65,13 +65,13 @@ void sprintf(char *str, const char *fmt, ...) {
                         ftoa(arg, buffer);
                         strncpy(str + si, buffer, strlen(buffer));
                         si += strlen(buffer);
-                        i += 2;
+                        i++;
                         break;
                     }
-                    default: {
-                        va_end(ap);
-                        break;
-                    }
+                    // default: {
+                    //     va_end(ap);
+                    //     break;
+                    // }
                 }
                 va_end(ap);
                 break;
@@ -86,12 +86,14 @@ void sprintf(char *str, const char *fmt, ...) {
                 str[si] = fmt[i];
                 si++;
                 va_end(ap);
-                break;
             }
         }
         i++;
     }
-    return;
+
+    str[si] = 0;
+
+    return si;
 }
 
 void putc(const char c) {
@@ -200,12 +202,14 @@ int itoa2(int num, char *buffer, int zeros) {
     return i;
 }
 
-void printf(const char *fmt, ...) {
+int printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     int i = 0;
     int len = strlen(fmt);
     va_end(ap);
+
+    int si = 0;
 
     while(i < len) {
         switch(fmt[i]){
@@ -215,21 +219,26 @@ void printf(const char *fmt, ...) {
                         char arg = va_arg(ap, int);
                         putc(arg);
                         i++;
+                        si++;
                         break;
                     }
                     case 's': {
                         char *arg = va_arg(ap, char *);
                         puts(arg);
                         i++;
+                        si += strlen(arg);
                         break;
                     }
                     case 'i':
                     case 'd': {
                         int arg = va_arg(ap, int);
-                        if(arg == 0) putc('0');
-                        else {
+                        if(arg == 0) {
+                            putc('0');
+                            si++;
+                        } else {
                             char buffer[20];
                             puts(itoa(arg, buffer, 10));
+                            si += strlen(buffer);
                         }
                         i++;
                         break;
@@ -239,6 +248,7 @@ void printf(const char *fmt, ...) {
                         int arg = va_arg(ap, int);
                         char buffer[20];
                         puts(itoa(arg, buffer, 16));
+                        si += strlen(buffer);
                         i++;
                         break;
                     }
@@ -247,11 +257,13 @@ void printf(const char *fmt, ...) {
                         float arg = (float)(va_arg(ap, double));
                         char buffer[20];
                         puts(ftoa(arg, buffer));
+                        si += strlen(buffer);
                         i++;
                         break;
                     }
                     default: {
                         va_end(ap);
+                        si++;
                         break;
                     }
                 }
@@ -265,6 +277,7 @@ void printf(const char *fmt, ...) {
             }
         }
         i++;
+        si++;
     }
-    return;
+    return si;
 }

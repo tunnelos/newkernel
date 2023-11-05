@@ -6,8 +6,8 @@
 void putc(const char c);
 void puts(const char *str);
 
-void printf(const char *fmt, ...);
-void sprintf(char *buffer, const char *fmt, ...);
+int printf(const char *fmt, ...);
+int sprintf(char *buffer, const char *fmt, ...);
 
 char *itoa(int num, char *buffer, int base);
 int itoa2(int num, char *buffer, int zeros);
