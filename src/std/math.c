@@ -17,20 +17,17 @@ int32_t abs(int x){
 }
 
 float fabs(float x){
-    return x < 0.f ? -x : x;
+    float result;
+    asm("fabs" : "=t"(result) : "0"(x));
+    return result;
 }
 
 float sqrt(float number){
     assert(number >= 0);
 
-    float i = 0;
-
-    while(i <= number){
-        if((i * i) >= number) return i;
-        i += 0.000001;
-    }
-
-    return i;
+    float result;
+    asm("fsqrt" : "=t"(result) : "0"(number));
+    return result;
 }
 
 float round(float number){
@@ -46,17 +43,9 @@ int32_t ceil(float x){
 }
 
 float cos(float x){
-    if( x < 0.0f ) x = -x;
-    if (compare_float(x, PI * 2) <= 0) {
-        do { x -= PI * 2; }
-        while(compare_float(x, PI * 2) <= 0);
-    }
-
-    if ((compare_float(x, PI) <= 0) && (compare_float(x, PI * 2) == -1)){
-        x -= PI;
-        return ((-1) * (1.0f - (x * x / 2.0f) * ( 1.0f - (x * x / 12.0f) * ( 1.0f - (x * x / 30.0f) * (1.0f - (x * x / 56.0f ) * (1.0f - (x * x / 90.0f) * (1.0f - (x * x / 132.0f) * (1.0f - (x * x / 182.0f)))))))));
-    } 
-    return 1.0f - (x * x/2.0f) * ( 1.0f - (x * x / 12.0f) * ( 1.0f - (x * x / 30.0f) * (1.0f - (x * x / 56.0f ) * (1.0f - (x * x / 90.0f) * (1.0f - (x * x / 132.0f) * (1.0f - (x * x / 182.0f)))))));
+    float result;
+    asm("fcos" : "=t"(result) : "0"(x));
+    return result;
 }
 
 float fmod(float x, float y){
@@ -64,7 +53,9 @@ float fmod(float x, float y){
 }
 
 float sin(float x){
-    return cos(x - (PI / 2.f));
+    float result;
+    asm("fsin" : "=t"(result) : "0"(x));
+    return result;
 }
 
 int32_t pow(int x, int y){

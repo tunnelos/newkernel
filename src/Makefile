@@ -8,7 +8,7 @@ vhd:
 kernelboot:
 	@qemu-system-i386 -m 32M -kernel ../build/kernel.elf -no-shutdown -no-reboot -s -serial stdio -drive file=VHD.img,format=raw,index=0,media=disk #-d int
 kernelbootiso:
-	@qemu-system-i386 -m 32M -cdrom ../build/kernel/kernel.iso -no-shutdown -no-reboot -s -serial stdio -drive file=VHD.img,format=raw,index=0,media=disk #-d int
+	@qemu-system-i386 -m 32M -cdrom ../build/kernel/kernel.iso -no-shutdown -no-reboot -s -serial stdio -drive file=VHD.img,format=raw,index=0,media=disk -smp 2 #-d int
 buildimage:
 	@mkdir -p ../build/kernel/tree/boot/grub
 	@cp ../build/kernel.elf ../build/kernel/tree/boot/

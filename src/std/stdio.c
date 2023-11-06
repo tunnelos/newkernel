@@ -170,6 +170,11 @@ char *itoa(int num, char *buffer, int base) {
     
     if(num == 0) return "0";
 
+    if (num < 0 && base != 16) {
+        buffer[counter++] = '-';
+        num = -num;
+    }
+
     while(num != 0 && counter < buffer_size){
         digit = (num % base);
         if(digit > 9){
@@ -182,6 +187,8 @@ char *itoa(int num, char *buffer, int base) {
 
     buffer[counter] = '\0';
     return strrev(buffer);
+
+    return buffer;
 }
 
 int itoa2(int num, char *buffer, int zeros) {

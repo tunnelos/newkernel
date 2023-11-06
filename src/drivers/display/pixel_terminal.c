@@ -69,6 +69,12 @@ void __pixel_terminal_write(const char *str) {
     __global_currentTextTerminal.swrite(str, strlen(str));
 }
 
+void __pixel_terminal_raw_draw_pixel(vector2d_t pos, uint32_t col) {  
+    uint32_t offset = (pos.y * (__global_currentTextTerminal.get_size().x * 8) + pos.x);
+
+    ((uint32_t *)__global_currentTextTerminal.buffer)[offset] = col;
+}
+
 void __pixel_terminal_clear() {
     // __serial_write_fmt("pixel clear\r\n");
 
@@ -221,6 +227,7 @@ terminal_t __pixel_terminal_createTerminal() {
     term.swrite = __pixel_terminal_swrite;
     term.write = __pixel_terminal_write;
     term.get_size = __pixel_terminal_get_size;
+    term.raw_draw_pixel = __pixel_terminal_raw_draw_pixel;
 
     return term;
 }

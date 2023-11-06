@@ -34,6 +34,9 @@ typedef struct terminal_t {
     vector2d_t (*get_size)();
 
     void *(*get_static_buffer_address)();
+
+    // draws pixel, not character on mapped character table for this terminal
+    void (*raw_draw_pixel)(vector2d_t pos, uint32_t color);
 } terminal_t;
 
 extern terminal_t __global_currentTextTerminal;

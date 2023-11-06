@@ -9,6 +9,8 @@
 #include <vga80x25.h>
 #include <stdlib.h>
 
+#include <math.h>
+
 #include <ctype.h>
 
 #include <application_bootscreen/main.h>
@@ -84,6 +86,41 @@ void __application_terminal_test() {
         __ide_get_access(action);
 
         puts("Done.\n");
+    }
+    
+    int frames = 500;
+    int fi = 0;
+
+    int offset = 0;
+
+    vector2d_t sz = tunnel_config.terminal.get_size();
+
+    sz.x *= 8;
+    sz.y *= 16;
+
+    while (fi < frames) {
+        int i = 0;
+        while (i < (tunnel_config.terminal.get_size().x * 8) - offset) {
+            float val = sqrt(((float)i + (float)fi) * 0.1f) * 40.f;
+
+            vector2d_t pos;
+            pos.x = offset + i;
+            pos.y = 100 + (int)round(val);
+
+            if (!(pos.y >= sz.y)) tunnel_config.terminal.raw_draw_pixel(pos, (i + fi) >> 3);
+
+            i++;
+        }
+
+        // char *data = (char *)malloc(64);
+
+        // sprintf(data, "%d\n", (int)(sin(i + fi) * 2.f));
+
+        // __serial_write_fmt("%s\n", data);
+
+        // wait((int)(sin(i + fi)));
+
+        fi++;
     }
 }
 

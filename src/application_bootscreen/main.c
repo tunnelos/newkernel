@@ -26,8 +26,6 @@ void __app_bootscreen_init() {
 
     tunnel_config.terminal.write(buffer);
     
-    free(buffer);
-    
     uint8_t colortable[14] = {
         VGA_COLOR_BLUE,
         VGA_COLOR_GREEN,
@@ -48,7 +46,11 @@ void __app_bootscreen_init() {
     uint8_t i = 0;
     uint8_t offset = 0;
 
-    while(i < ((tunnel_config.terminal.get_size().x - strlen(buffer)) / 2)) {
+    int points = (tunnel_config.terminal.get_size().x - strlen(buffer)) / 2;
+
+    free(buffer);
+
+    while(i < points) {
         tunnel_config.terminal.set_color(vga_entry_color(colortable[(i + offset) % 14], VGA_COLOR_BLACK));
         if((i + 1) != tunnel_config.terminal.get_size().y) {
             tunnel_config.terminal.putc('.');
@@ -84,4 +86,6 @@ void __app_bootscreen_init() {
     tunnel_config.terminal.row = old_pos.y;
 
     tunnel_config.terminal.set_color(old_color);
+
+    puts("\n");
 }
